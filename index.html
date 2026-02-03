@@ -5,214 +5,162 @@
 <title>Cartes Rockin</title>
 
 <style>
-  body{
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
-    background:#f6f7f9;
-    color:#222;
-    text-align:center;
-    margin:0;
-    padding:26px;
-  }
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+  background:#f6f7f9;
+  color:#222;
+  text-align:center;
+  margin:0;
+  padding:26px;
+}
 
-  h1{
-    margin:0 0 14px 0;
-    font-size:30px;
-    font-weight:650;
-  }
+h1{
+  margin:0 0 14px 0;
+  font-size:30px;
+  font-weight:650;
+}
 
-  .controls{
-    margin-bottom:14px;
-  }
+.controls{
+  margin-bottom:14px;
+}
 
-  select, button{
-    font-size:16px;
-    padding:10px 14px;
-    border-radius:12px;
-    margin:6px;
-  }
+select, button{
+  font-size:16px;
+  padding:10px 14px;
+  border-radius:12px;
+  margin:6px;
+}
 
-  select{
-    border:1px solid #cfcfcf;
-    background:white;
-  }
+select{
+  border:1px solid #cfcfcf;
+  background:white;
+}
 
-  button{
-    background:#ffcc00;
-    border:none;
-    font-weight:700;
-    cursor:pointer;
-  }
+button{
+  background:#ffcc00;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+}
 
-  button:hover{ filter: brightness(1.03); }
+/* ---------- ESCENARI CARTA GRAN (REBOT) ---------- */
 
-  /* ---------- ESCENARI “baralla” (rebot, NO 3D) ---------- */
-  .stage{
-    width:min(92vw, 980px);
-    margin: 0 auto;
-  }
+.stage{
+  width:min(92vw, 980px);
+  margin:auto;
+}
 
-  .deck{
-    position: relative;
-    width: 100%;
-    height: min(62vh, 620px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
+.deck{
+  position:relative;
+  width:100%;
+  height:min(60vh, 600px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-  .card{
-    position:absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 18px;
-    overflow:hidden;
-    background: white;
-    border: 1px solid rgba(0,0,0,.10);
-    box-shadow: 0 10px 30px rgba(0,0,0,.18);
-    transform-origin: 50% 60%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
+.card{
+  position:absolute;
+  width:100%;
+  height:100%;
+  border-radius:18px;
+  overflow:hidden;
+  background:white;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
 
-  .card img{
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display:block;
-    background:white;
-  }
+.card img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
 
-  .card.back2{
-    transform: translateY(16px) scale(0.97) rotate(-1.2deg);
-    opacity: 0.60;
-  }
+.card.back2{
+  transform: translateY(16px) scale(.97) rotate(-1deg);
+  opacity:.6;
+}
 
-  .card.back1{
-    transform: translateY(9px) scale(0.985) rotate(0.8deg);
-    opacity: 0.78;
-  }
+.card.back1{
+  transform: translateY(9px) scale(.985) rotate(.8deg);
+  opacity:.78;
+}
 
-  .card.top{
-    transform: translateY(0) scale(1) rotate(0deg);
-    opacity: 1;
-  }
+.card.top.animate{
+  animation: deal .42s cubic-bezier(.2,.9,.2,1);
+}
 
-  .card.top.animate{
-    animation: deal 420ms cubic-bezier(.2,.9,.2,1);
-  }
+@keyframes deal{
+  0%{transform:translateY(0)}
+  35%{transform:translateY(-10px)}
+  70%{transform:translateY(4px)}
+  100%{transform:translateY(0)}
+}
 
-  .card.back1.bump{ animation: bump1 300ms ease; }
-  .card.back2.bump{ animation: bump2 300ms ease; }
+.hint{
+  margin:12px 0 18px;
+  font-size:13px;
+  opacity:.65;
+}
 
-  @keyframes deal{
-    0%   { transform: translateY(0) scale(1) rotate(0deg); }
-    35%  { transform: translateY(-10px) scale(1.01) rotate(-0.6deg); }
-    70%  { transform: translateY(4px) scale(1) rotate(0.4deg); }
-    100% { transform: translateY(0) scale(1) rotate(0deg); }
-  }
+/* ---------- PISSARRA ---------- */
 
-  @keyframes bump1{
-    0%   { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
-    50%  { transform: translateY(7px) scale(0.99) rotate(0.6deg); }
-    100% { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
-  }
+.board-wrap{
+  width:min(92vw,1100px);
+  margin:auto;
+  text-align:left;
+}
 
-  @keyframes bump2{
-    0%   { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
-    50%  { transform: translateY(14px) scale(0.975) rotate(-1.0deg); }
-    100% { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
-  }
+.board-head{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
 
-  .hint{
-    margin:10px auto 18px auto;
-    opacity:.65;
-    font-size:13px;
-    max-width: 980px;
-  }
+.board{
+  position:relative;
+  width:100%;
+  min-height:650px; /* ← 5+ files */
+  background:white;
+  border:2px dashed rgba(0,0,0,.2);
+  border-radius:16px;
+  overflow:hidden;
+}
 
-  /* ---------- PISSARRA (lliure, gran, arrossegable internament) ---------- */
-  .board-wrap{
-    width:min(92vw, 1100px);
-    margin: 0 auto;
-    text-align:left;
-  }
+/* MINI-CARTES → NOMÉS IMATGE */
 
-  .board-head{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    justify-content:space-between;
-    margin: 8px 0 10px 0;
-  }
+.thumb{
+  position:absolute;
+  width:160px;
+  height:110px;
 
-  .board-title{
-    font-weight:650;
-    font-size:15px;
-    opacity:.9;
-  }
+  border:none;
+  background:transparent;
+  box-shadow:none;
+  border-radius:0;
 
-  .board{
-    position: relative;
-    width: 100%;
-    /* 5 files mínim: 5*(110px aprox) + marges */
-    min-height: 620px;
-    background: #ffffff;
-    border: 2px dashed rgba(0,0,0,.20);
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.08);
-    overflow: hidden;
-  }
+  cursor:grab;
+  user-select:none;
+  touch-action:none;
+}
 
-  .board.dragover{
-    border-color: rgba(255,204,0,.95);
-    box-shadow: 0 10px 28px rgba(255,204,0,.18);
-  }
+.thumb:active{
+  cursor:grabbing;
+  transform:scale(1.05);
+}
 
-  /* Mini-cartes absolutament posicionades */
-  .thumb{
-    position:absolute;
-    width: 170px;
-    height: 115px;
-    border-radius: 12px;
-    overflow:hidden;
-    border: 1px solid rgba(0,0,0,.12);
-    background:white;
-    box-shadow: 0 8px 20px rgba(0,0,0,.12);
-    cursor: grab;
-    user-select: none;
-    touch-action: none; /* important per arrossegar bé */
-  }
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:transparent;
+  pointer-events:none;
+}
 
-  .thumb:active{ cursor: grabbing; }
-
-  .thumb img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
-    background:white;
-    pointer-events:none; /* perquè l’arrossegament sigui del contenidor */
-  }
-
-  .thumb .x{
-    position:absolute;
-    top:6px;
-    right:8px;
-    font-size:14px;
-    opacity:.55;
-    pointer-events:none;
-  }
-
-  .muted{
-    opacity:.6;
-    font-size:13px;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 820px){
-    .thumb{ width: 150px; height: 105px; }
-    .board{ min-height: 560px; }
-  }
+.muted{
+  font-size:13px;
+  opacity:.6;
+  margin-top:8px;
+}
 </style>
 </head>
 
@@ -227,251 +175,152 @@
 
 <div class="stage">
   <div class="deck">
-    <div class="card back2"><img id="imgBack2" alt=""></div>
-    <div class="card back1"><img id="imgBack1" alt=""></div>
-    <div class="card top" id="topCard"><img id="imgTop" alt="Carta actual"></div>
+    <div class="card back2"><img id="imgBack2"></div>
+    <div class="card back1"><img id="imgBack1"></div>
+    <div class="card top" id="topCard"><img id="imgTop" draggable="true"></div>
   </div>
 </div>
 
 <div class="hint">
-  <b>Enter</b> = nova carta · <b>Arrossega</b> la carta gran cap a la pissarra · a la pissarra: <b>arrossega lliurement</b> · <b>doble clic</b> per eliminar
+Enter = nova carta · arrossega la carta cap a la pissarra · mou-les lliurement · doble clic per eliminar
 </div>
 
 <div class="board-wrap">
   <div class="board-head">
-    <div class="board-title">Pissarra</div>
-    <button id="clearBoard" type="button">Neteja pissarra</button>
+    <strong>Pissarra</strong>
+    <button id="clearBoard">Neteja pissarra</button>
   </div>
 
   <div id="board" class="board"></div>
-  <div class="muted">Pots col·locar les cartes on vulguis (tipus pissarra real) i moure-les després.</div>
+  <div class="muted">Col·loca les cartes on vulguis, com en una pissarra real.</div>
 </div>
 
 <script>
-let MANIFEST = {}
-let barallaActual = []
-let barallaRestant = []
-let currentPath = null
+let MANIFEST={}
+let barallaActual=[]
+let barallaRestant=[]
+let currentPath=null
 
-// historial visual (baralla apilada)
-let last1 = null
-let last2 = null
-
-function shuffle(array){
-  for(let i=array.length-1;i>0;i--){
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1))
-    ;[array[i],array[j]]=[array[j],array[i]]
+    ;[a[i],a[j]]=[a[j],a[i]]
   }
-  return array
+  return a
 }
 
 async function init(){
-  const res = await fetch("manifest.json")
-  MANIFEST = await res.json()
+  const res=await fetch("manifest.json")
+  MANIFEST=await res.json()
 
-  const select = document.getElementById("deck")
+  const select=document.getElementById("deck")
+
   Object.keys(MANIFEST).forEach(b=>{
-    const opt=document.createElement("option")
-    opt.value=b
-    opt.textContent=b
-    select.appendChild(opt)
-  })
-  select.addEventListener("change", carregarBaralla)
-
-  // Enter = nova carta
-  document.addEventListener("keydown", e=>{
-    if(e.key==="Enter") novaCarta()
+    const o=document.createElement("option")
+    o.value=b
+    o.textContent=b
+    select.appendChild(o)
   })
 
-  // Drag HTML5 des de la carta gran
-  const imgTop = document.getElementById("imgTop")
-  imgTop.draggable = true
-  imgTop.addEventListener("dragstart", (e)=>{
+  select.onchange=carregarBaralla
+  document.addEventListener("keydown",e=>{ if(e.key==="Enter") novaCarta() })
+
+  const imgTop=document.getElementById("imgTop")
+  imgTop.addEventListener("dragstart",e=>{
     if(!currentPath) return
-    e.dataTransfer.setData("text/plain", currentPath)
-    e.dataTransfer.effectAllowed = "copy"
+    e.dataTransfer.setData("text/plain",currentPath)
   })
 
-  // Drop a la pissarra (crea mini-carta on caus)
-  const board = document.getElementById("board")
+  const board=document.getElementById("board")
 
-  board.addEventListener("dragover", (e)=>{
+  board.addEventListener("dragover",e=>e.preventDefault())
+
+  board.addEventListener("drop",e=>{
     e.preventDefault()
-    board.classList.add("dragover")
-  })
-
-  board.addEventListener("dragleave", ()=>{
-    board.classList.remove("dragover")
-  })
-
-  board.addEventListener("drop", (e)=>{
-    e.preventDefault()
-    board.classList.remove("dragover")
-
-    const path = e.dataTransfer.getData("text/plain")
+    const path=e.dataTransfer.getData("text/plain")
     if(!path) return
 
-    // coordenades dins del board
-    const rect = board.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-
-    addThumb(path, x, y)
+    const rect=board.getBoundingClientRect()
+    addThumb(path, e.clientX-rect.left, e.clientY-rect.top)
   })
 
-  // Netejar pissarra
-  document.getElementById("clearBoard").addEventListener("click", ()=>{
-    board.innerHTML = ""
-  })
+  document.getElementById("clearBoard").onclick=()=>board.innerHTML=""
 
   carregarBaralla()
 }
 
-function setImg(elId, path){
-  const el = document.getElementById(elId)
-  if(!path){
-    el.removeAttribute("src")
-    return
-  }
-  const url = new URL(path, window.location.href)
-  url.searchParams.set("t", Date.now())
-  el.src = url.toString()
+function setImg(id,path){
+  const img=document.getElementById(id)
+  if(!path){ img.removeAttribute("src"); return }
+  const url=new URL(path,window.location.href)
+  url.searchParams.set("t",Date.now())
+  img.src=url.toString()
 }
 
 function carregarBaralla(){
   const deck=document.getElementById("deck").value
   barallaActual=[...MANIFEST[deck]]
   barallaRestant=shuffle([...barallaActual])
-
-  // reset historial apilat
-  last1 = null
-  last2 = null
-  setImg("imgBack1", null)
-  setImg("imgBack2", null)
-
   novaCarta()
 }
 
 function novaCarta(){
-  if(barallaRestant.length===0){
-    barallaRestant = shuffle([...barallaActual])
+  if(barallaRestant.length===0) barallaRestant=shuffle([...barallaActual])
+
+  const path=barallaRestant.pop()
+  currentPath=path
+
+  setImg("imgTop",path)
+
+  const top=document.getElementById("topCard")
+  top.classList.remove("animate")
+  void top.offsetWidth
+  top.classList.add("animate")
+}
+
+function addThumb(path,x,y){
+  const board=document.getElementById("board")
+
+  const t=document.createElement("div")
+  t.className="thumb"
+
+  const img=document.createElement("img")
+  const url=new URL(path,window.location.href)
+  url.searchParams.set("t",Date.now())
+  img.src=url.toString()
+
+  t.appendChild(img)
+
+  t.style.left=(x-80)+"px"
+  t.style.top=(y-55)+"px"
+
+  t.ondblclick=()=>t.remove()
+
+  makeDraggable(t,board)
+
+  board.appendChild(t)
+}
+
+function makeDraggable(el,board){
+  let startX,startY,origX,origY
+
+  el.onpointerdown=e=>{
+    el.setPointerCapture(e.pointerId)
+    startX=e.clientX
+    startY=e.clientY
+    origX=parseFloat(el.style.left)
+    origY=parseFloat(el.style.top)
   }
 
-  const path = barallaRestant.pop()
-  currentPath = path
+  el.onpointermove=e=>{
+    if(e.buttons!==1) return
 
-  // actualitza “baralla” visual
-  last2 = last1
-  last1 = path
-  setImg("imgBack2", last2)
-  setImg("imgBack1", last1)
-  setImg("imgTop", path)
+    const dx=e.clientX-startX
+    const dy=e.clientY-startY
 
-  // animació rebot
-  const top = document.getElementById("topCard")
-  const b1 = document.querySelector(".card.back1")
-  const b2 = document.querySelector(".card.back2")
-
-  top.classList.remove("animate")
-  b1.classList.remove("bump")
-  b2.classList.remove("bump")
-
-  void top.offsetWidth
-
-  top.classList.add("animate")
-  b1.classList.add("bump")
-  b2.classList.add("bump")
-}
-
-// --- Mini-carta: crea i posiciona lliurement ---
-function addThumb(path, x, y){
-  const board = document.getElementById("board")
-  const rect = board.getBoundingClientRect()
-
-  const thumb = document.createElement("div")
-  thumb.className = "thumb"
-
-  const img = document.createElement("img")
-  const url = new URL(path, window.location.href)
-  url.searchParams.set("t", Date.now())
-  img.src = url.toString()
-
-  const xMark = document.createElement("div")
-  xMark.className = "x"
-  xMark.textContent = "×"
-
-  thumb.appendChild(img)
-  thumb.appendChild(xMark)
-
-  // posició (centra respecte el punt on caus)
-  // fem clamp perquè no surti fora
-  const w = 170, h = 115
-  const left = clamp(x - w/2, 0, rect.width - w)
-  const top  = clamp(y - h/2, 0, rect.height - h)
-
-  thumb.style.left = left + "px"
-  thumb.style.top  = top + "px"
-
-  // doble clic per eliminar
-  thumb.addEventListener("dblclick", ()=> thumb.remove())
-
-  // arrossegament intern lliure (pointer)
-  makeDraggableWithinBoard(thumb, board)
-
-  board.appendChild(thumb)
-}
-
-function clamp(v, min, max){
-  return Math.max(min, Math.min(max, v))
-}
-
-function makeDraggableWithinBoard(el, board){
-  let startX=0, startY=0, origLeft=0, origTop=0
-  let dragging = false
-
-  el.addEventListener("pointerdown", (e)=>{
-    dragging = true
-    el.setPointerCapture(e.pointerId)
-    el.style.zIndex = String(Date.now()) // porta-la al davant
-
-    startX = e.clientX
-    startY = e.clientY
-
-    origLeft = parseFloat(el.style.left || "0")
-    origTop  = parseFloat(el.style.top  || "0")
-  })
-
-  el.addEventListener("pointermove", (e)=>{
-    if(!dragging) return
-
-    const dx = e.clientX - startX
-    const dy = e.clientY - startY
-
-    const boardRect = board.getBoundingClientRect()
-    const elRect = el.getBoundingClientRect()
-
-    // dimensions reals de l’element (per responsive)
-    const w = elRect.width
-    const h = elRect.height
-
-    let newLeft = origLeft + dx
-    let newTop  = origTop + dy
-
-    newLeft = clamp(newLeft, 0, boardRect.width - w)
-    newTop  = clamp(newTop, 0, boardRect.height - h)
-
-    el.style.left = newLeft + "px"
-    el.style.top  = newTop  + "px"
-  })
-
-  el.addEventListener("pointerup", (e)=>{
-    dragging = false
-    try{ el.releasePointerCapture(e.pointerId) }catch(_){}
-  })
-
-  el.addEventListener("pointercancel", ()=>{
-    dragging = false
-  })
+    el.style.left=(origX+dx)+"px"
+    el.style.top=(origY+dy)+"px"
+  }
 }
 
 init()
