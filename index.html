@@ -16,9 +16,12 @@
     --panel:#ffffff;
     --border:rgba(0,0,0,.18);
 
-    /* ✅ ESTRUCTURADA: +15% i menys aire */
+    /* ✅ ESTRUCTURADA: mida i aire */
     --struct-card-h: 90px;
     --struct-gap: 4px;
+
+    /* ✅ “carril” dins la columna: on volem snap-x (percent de l’amplada de la columna) */
+    --lane-x: 0.66; /* 0.66 = cap a la dreta, però dins la columna */
   }
 
   body{
@@ -205,12 +208,14 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
+  /* Base sempre a sota */
   .freeBase{
     position:absolute;
     inset:0;
     z-index: 1;
     pointer-events:none;
   }
+  /* Tot el que arrossegues a sobre */
   .freeOverlay{
     position:absolute;
     inset:0;
@@ -265,10 +270,12 @@
 
   /* ===== STRUCTURED MODE ===== */
   .structuredWrap{
+    transform-origin: 0 0;
     width: 100%;
     height: 100%;
     padding: 6px;
     box-sizing: border-box;
+    position:relative;
   }
 
   .structuredTop{
@@ -305,31 +312,12 @@
     font-size:13px;
   }
 
-  /* ✅ Àrea real de treball (la que es fa zoom + drop) */
-  .structuredArea{
-    position:relative;
-    transform-origin: 0 0;
-    min-height: 520px;
-  }
-
-  /* ✅ Flex: graella a l’esquerra + espai a la dreta */
-  .structuredBase{
-    position:relative;
-    z-index: 1;
-    display:flex;
-    align-items:flex-start;
-    gap:14px;
-  }
-
-  .matrixHolder{
-    flex: 0 0 auto;   /* NO s’estira */
-  }
-
-  /* ✅ Columnes: amplada raonable, no s’inflen */
+  /* ✅ Columnes no s’inflen */
   .matrix{
     display:grid;
     gap: var(--struct-gap);
     align-items:stretch;
+    width:100%;
     grid-template-columns: repeat(auto-fit, minmax(140px, 170px));
     justify-content: start;
   }
@@ -347,14 +335,18 @@
     min-width:0;
   }
 
+  /* ✅ Slot: carta de creació enganxada a l'esquerra, espai lliure a la dreta */
   .cardSlot{
     width:100%;
     height: var(--struct-card-h);
     border-radius:10px;
     background: rgba(0,0,0,.03);
+
     display:flex;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
+
+    padding-left:4px;
     overflow:hidden;
   }
 
@@ -363,24 +355,19 @@
   }
 
   .cardSlot img{
-    width:100%;
     height:100%;
+    width:auto;
     object-fit:contain;
     display:block;
+    flex-shrink:0;
   }
 
-  /* ✅ Zona buida a la dreta per arrossegar cartes */
-  .structuredSpace{
-    flex: 1 1 auto;
-    min-width: 320px;
-    min-height: calc(5 * var(--struct-card-h) + 4 * var(--struct-gap) + 8px);
-    border-radius:14px;
-    background:
-      radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
-    border: 1px dashed rgba(0,0,0,.18);
+  .structuredBase{
+    position:relative;
+    z-index: 1;
   }
 
-  /* ✅ Overlay per cartes arrossegades (cobreix TOT: esquerra + dreta) */
+  /* Overlay per cartes arrossegades (sempre a sobre de la base) */
   .structuredOverlay{
     position:absolute;
     inset: 0;
@@ -464,18 +451,11 @@
           <span style="font-size:12px;opacity:.65;">(mínim 1 carta per columna)</span>
         </div>
 
-        <!-- ✅ Àrea real (zoom + drop) -->
-        <div class="structuredArea" id="structuredArea">
-          <div class="structuredBase">
-            <div class="matrixHolder">
-              <div class="matrix" id="matrix"></div>
-            </div>
-
-            <div class="structuredSpace" id="structuredSpace" aria-label="Espai de treball"></div>
-          </div>
-
-          <div class="structuredOverlay" id="structuredOverlay"></div>
+        <div class="structuredBase">
+          <div class="matrix" id="matrix"></div>
         </div>
+
+        <div class="structuredOverlay" id="structuredOverlay"></div>
       </div>
 
     </div>
@@ -572,23 +552,24 @@ async function init(){
     addThumbToContainer(freeOverlay, path, x, y, "150px")
   })
 
-  // drop structuredArea (robust, i amb espai a la dreta)
-  const structuredArea = document.getElementById("structuredArea")
-  structuredArea.addEventListener("dragover", e=>{
+  // drop structuredWrap (robust) + ✅ magnetisme columnes
+  const structuredWrap = document.getElementById("structuredWrap")
+  structuredWrap.addEventListener("dragover", e=>{
     if(getMode()!=="structured") return
     e.preventDefault()
   })
-  structuredArea.addEventListener("drop", e=>{
+  structuredWrap.addEventListener("drop", e=>{
     e.preventDefault()
     if(getMode()!=="structured") return
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
 
-    const rect = structuredArea.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / zoom
+    const rect = structuredWrap.getBoundingClientRect()
+    const xRaw = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
 
-    addThumbToContainer(document.getElementById("structuredOverlay"), path, x, y, "140px")
+    const snappedX = snapXToNearestColumn(xRaw)
+    addThumbToContainer(document.getElementById("structuredOverlay"), path, snappedX, y, "140px")
   })
 
   carregarBaralla()
@@ -604,8 +585,7 @@ function setZoom(z){
   if(getMode()==="free"){
     document.getElementById("freeCanvas").style.transform = `scale(${zoom})`
   }else{
-    // ✅ fem zoom només sobre l’àrea (no sobre els controls)
-    document.getElementById("structuredArea").style.transform = `scale(${zoom})`
+    document.getElementById("structuredWrap").style.transform = `scale(${zoom})`
   }
 }
 
@@ -626,9 +606,8 @@ function applyMode(){
   }else{
     freeCanvas.classList.add("hidden")
     structured.classList.remove("hidden")
-    const area = document.getElementById("structuredArea")
-    area.style.transformOrigin="0 0"
-    area.style.transform = `scale(${zoom})`
+    structured.style.transformOrigin="0 0"
+    structured.style.transform = `scale(${zoom})`
   }
 }
 
@@ -681,6 +660,27 @@ function createThumb(path, widthCss){
 
   makeMovable(t)
   makeResizable(t, handle)
+
+  // ✅ magnetisme mentre mous (només en structured)
+  t.addEventListener("pointerup", ()=>{
+    if(getMode()!=="structured") return
+    // només snap si està dins structuredOverlay
+    const parent = t.parentElement
+    if(!parent || parent.id!=="structuredOverlay") return
+
+    const x = parseFloat(t.style.left||"0")
+    const y = parseFloat(t.style.top||"0")
+    const w = parseFloat(getComputedStyle(t).getPropertyValue("--w")) || 140
+
+    // Snap del centre a columna
+    const centerX = x + (w/2)
+    const snappedCenter = snapXToNearestColumn(centerX)
+    const newLeft = snappedCenter - (w/2)
+
+    t.style.left = newLeft + "px"
+    t.style.top  = y + "px"
+  })
+
   return t
 }
 
@@ -756,6 +756,48 @@ function makeResizable(el, handle){
   })
 }
 
+/* ===== ✅ Magnetisme: snap X a la columna més propera ===== */
+function snapXToNearestColumn(xInStructured){
+  const structuredWrap = document.getElementById("structuredWrap")
+  const matrix = document.getElementById("matrix")
+  const cols = Array.from(matrix.querySelectorAll(".col"))
+  if(cols.length===0) return xInStructured
+
+  const wrapRect = structuredWrap.getBoundingClientRect()
+
+  // Convertim xInStructured (coords locals) a x en pantalla (per comparar amb rects)
+  const xScreen = wrapRect.left + (xInStructured * zoom)
+
+  // Trobar columna més propera (per centre)
+  let best = null
+  let bestDist = Infinity
+
+  for(const col of cols){
+    const r = col.getBoundingClientRect()
+    const center = r.left + r.width/2
+    const dist = Math.abs(center - xScreen)
+    if(dist < bestDist){
+      bestDist = dist
+      best = r
+    }
+  }
+  if(!best) return xInStructured
+
+  // Ens volem posar dins la columna, cap a la dreta (zona lliure)
+  const laneRatio = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lane-x")) || 0.66
+  const targetScreenX = best.left + (best.width * laneRatio)
+
+  // Tornem a coords locals del structuredWrap (sense zoom)
+  const targetLocal = (targetScreenX - wrapRect.left) / zoom
+
+  // Clampegem perquè quedi dins la columna (amb marge)
+  const leftLocal = (best.left - wrapRect.left) / zoom
+  const rightLocal = (best.right - wrapRect.left) / zoom
+  const margin = 10
+
+  return clamp(targetLocal, leftLocal + margin, rightLocal - margin)
+}
+
 /* ===== Structured proposal ===== */
 function findCreationDeckKey(){
   const keys = Object.keys(MANIFEST)
@@ -827,8 +869,7 @@ function buildProposal(){
 /* ===== Export PNG (sense deformació pel zoom) ===== */
 async function exportPNG(){
   const mode = getMode()
-
-  const targetId = (mode === "free") ? "freeCanvas" : "structuredArea"
+  const targetId = (mode === "free") ? "freeCanvas" : "structuredWrap"
   const target = document.getElementById(targetId)
 
   const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")
@@ -848,7 +889,7 @@ async function exportPNG(){
       }
       const free = doc.getElementById("freeCanvas")
       if(free) free.style.transform = "none"
-      const struct = doc.getElementById("structuredArea")
+      const struct = doc.getElementById("structuredWrap")
       if(struct) struct.style.transform = "none"
     }
   })
