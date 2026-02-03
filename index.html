@@ -5,96 +5,192 @@
 <title>Cartes Rockin</title>
 
 <style>
-body{
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
-  background:#f6f7f9;
-  color:#222;
-  text-align:center;
-  margin:0;
-  padding:30px;
-}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+    background:#f6f7f9;
+    color:#222;
+    text-align:center;
+    margin:0;
+    padding:26px;
+  }
 
-h1{
-  margin:0 0 18px 0;
-  font-size:30px;
-  font-weight:600;
-}
+  h1{
+    margin:0 0 14px 0;
+    font-size:30px;
+    font-weight:650;
+  }
 
-.controls{
-  margin-bottom:20px;
-}
+  .controls{
+    margin-bottom:14px;
+  }
 
-select, button{
-  font-size:18px;
-  padding:12px 18px;
-  border-radius:12px;
-  margin:6px;
-}
+  select, button{
+    font-size:16px;
+    padding:10px 14px;
+    border-radius:12px;
+    margin:6px;
+  }
 
-button{
-  background:#ffcc00;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
+  select{
+    border:1px solid #cfcfcf;
+    background:white;
+  }
 
-/* ---------- ESCENARI 3D ---------- */
+  button{
+    background:#ffcc00;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+  }
 
-.stage{
-  width:min(92vw, 900px);
-  margin:auto;
-  perspective:1200px;
-}
+  button:hover{
+    filter: brightness(1.03);
+  }
 
-.card{
-  position:relative;
-  width:100%;
-  height:min(75vh, 700px);
-  transform-style:preserve-3d;
-  transition: transform .6s cubic-bezier(.2,.8,.2,1);
-  cursor:pointer;
-}
+  /* ---------- Carta principal (flip) ---------- */
+  .stage{
+    width:min(92vw, 920px);
+    margin: 0 auto;
+    perspective:1200px;
+  }
 
-/* gir */
-.card.flip{
-  transform: rotateY(180deg);
-}
+  .card{
+    position:relative;
+    width:100%;
+    height:min(62vh, 620px);
+    transform-style:preserve-3d;
+    transition: transform .6s cubic-bezier(.2,.8,.2,1);
+    user-select:none;
+  }
 
-/* cares */
-.face{
-  position:absolute;
-  width:100%;
-  height:100%;
-  backface-visibility:hidden;
-  border-radius:18px;
-  overflow:hidden;
-  background:white;
-  box-shadow:0 10px 30px rgba(0,0,0,.2);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+  .card.flip{
+    transform: rotateY(180deg);
+  }
 
-.face img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+  .face{
+    position:absolute;
+    width:100%;
+    height:100%;
+    backface-visibility:hidden;
+    border-radius:18px;
+    overflow:hidden;
+    background:white;
+    box-shadow:0 10px 30px rgba(0,0,0,.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border: 1px solid rgba(0,0,0,.08);
+  }
 
-/* darrere (es veu quan gira) */
-.back{
-  transform: rotateY(180deg);
-  background:linear-gradient(135deg,#e9ecef,#d7dde5);
-  font-size:22px;
-  font-weight:600;
-  color:#666;
-}
+  .face img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:white;
+  }
 
-.info{
-  margin-top:14px;
-  opacity:.6;
-  font-size:14px;
-}
+  .back{
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg,#eef1f5,#dfe6ee);
+    color:#5f6b77;
+    font-size:20px;
+    font-weight:650;
+    letter-spacing:.2px;
+  }
+
+  .hint{
+    margin:10px auto 18px auto;
+    opacity:.65;
+    font-size:13px;
+    max-width: 920px;
+  }
+
+  .hint b{
+    opacity:.9;
+  }
+
+  /* ---------- Pissarra ---------- */
+  .board-wrap{
+    width:min(92vw, 1100px);
+    margin: 0 auto;
+    text-align:left;
+  }
+
+  .board-head{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    margin: 6px 0 10px 0;
+  }
+
+  .board-title{
+    font-weight:650;
+    font-size:15px;
+    opacity:.9;
+  }
+
+  .board{
+    min-height: 180px;
+    background: #ffffff;
+    border: 2px dashed rgba(0,0,0,.20);
+    border-radius: 16px;
+    padding: 12px;
+    display:flex;
+    flex-wrap: wrap;
+    gap:10px;
+    align-content:flex-start;
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  }
+
+  .board.dragover{
+    border-color: rgba(255,204,0,.9);
+    box-shadow: 0 10px 28px rgba(255,204,0,.18);
+  }
+
+  .thumb{
+    width: 140px;       /* mida de mini-carta */
+    height: 98px;
+    border-radius: 12px;
+    overflow:hidden;
+    border: 1px solid rgba(0,0,0,.12);
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor: grab;
+    position:relative;
+  }
+
+  .thumb:active{ cursor: grabbing; }
+
+  .thumb img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:white;
+  }
+
+  .thumb .x{
+    position:absolute;
+    top:6px;
+    right:8px;
+    font-size:12px;
+    opacity:.55;
+    pointer-events:none;
+  }
+
+  .muted{
+    opacity:.6;
+    font-size:13px;
+    margin-top: 8px;
+  }
+
+  /* Responsive: mini-cartes més petites en pantalles estretes */
+  @media (max-width: 700px){
+    .thumb{ width: 120px; height: 86px; }
+    .card{ height:min(52vh, 520px); }
+  }
 </style>
 </head>
 
@@ -108,28 +204,39 @@ button{
 </div>
 
 <div class="stage">
-
   <div class="card" id="card">
-
-    <!-- cara frontal -->
     <div class="face front">
-      <img id="imgFront">
+      <!-- IMPORTANT: draggable aquí -->
+      <img id="imgFront" draggable="true" alt="Carta actual">
     </div>
-
-    <!-- cara del darrere -->
     <div class="face back">
-      🎵
+      Arrossega-la a la pissarra ↓
     </div>
+  </div>
+</div>
 
+<div class="hint">
+  <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra · a la pissarra: <b>arrossega per ordenar</b> · <b>doble clic</b> per eliminar
+</div>
+
+<div class="board-wrap">
+  <div class="board-head">
+    <div class="board-title">Pissarra</div>
+    <button id="clearBoard" type="button">Neteja pissarra</button>
   </div>
 
-  <div class="info">Prem ENTER o fes clic a la carta</div>
+  <div id="board" class="board"></div>
+  <div class="muted">Deixa-hi les cartes que vulguis conservar per comparar, ordenar o construir una seqüència.</div>
 </div>
 
 <script>
 let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
+let currentPath = null
+
+// per reordenar dins la pissarra
+let draggedThumb = null
 
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
@@ -144,7 +251,6 @@ async function init(){
   MANIFEST = await res.json()
 
   const select = document.getElementById("deck")
-
   Object.keys(MANIFEST).forEach(b=>{
     const opt=document.createElement("option")
     opt.value=b
@@ -154,7 +260,57 @@ async function init(){
 
   select.addEventListener("change", carregarBaralla)
 
-  document.getElementById("card").onclick = novaCarta
+  // Enter = nova carta
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Enter") novaCarta()
+  })
+
+  // Drag de la carta principal cap a la pissarra
+  const imgFront = document.getElementById("imgFront")
+  imgFront.addEventListener("dragstart", (e)=>{
+    if(!currentPath) return
+    e.dataTransfer.setData("text/plain", currentPath)
+    e.dataTransfer.effectAllowed = "copy"
+  })
+
+  // Pissarra: drop
+  const board = document.getElementById("board")
+
+  board.addEventListener("dragover", (e)=>{
+    e.preventDefault()
+    board.classList.add("dragover")
+
+    // si estem arrossegant una mini-carta, reordenem “on cau”
+    if(draggedThumb){
+      const afterEl = getDragAfterElement(board, e.clientX, e.clientY)
+      if(afterEl == null){
+        board.appendChild(draggedThumb)
+      }else{
+        board.insertBefore(draggedThumb, afterEl)
+      }
+    }
+  })
+
+  board.addEventListener("dragleave", ()=>{
+    board.classList.remove("dragover")
+  })
+
+  board.addEventListener("drop", (e)=>{
+    e.preventDefault()
+    board.classList.remove("dragover")
+
+    const path = e.dataTransfer.getData("text/plain")
+    if(path){
+      // si ve de la carta principal → afegim mini-carta
+      addThumb(path)
+    }
+    draggedThumb = null
+  })
+
+  // Netejar pissarra
+  document.getElementById("clearBoard").addEventListener("click", ()=>{
+    board.innerHTML = ""
+  })
 
   carregarBaralla()
 }
@@ -166,7 +322,7 @@ function carregarBaralla(){
   novaCarta()
 }
 
-function setImg(path){
+function setMainImg(path){
   const img = document.getElementById("imgFront")
   const url = new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
@@ -174,32 +330,83 @@ function setImg(path){
 }
 
 function novaCarta(){
-
   if(barallaRestant.length===0){
     barallaRestant = shuffle([...barallaActual])
   }
 
   const path = barallaRestant.pop()
+  currentPath = path
 
   const card = document.getElementById("card")
 
-  // girar
+  // flip
   card.classList.add("flip")
 
-  // quan està girada (mig segon), canviem imatge
+  // quan està girada, canviem imatge
   setTimeout(()=>{
-    setImg(path)
+    setMainImg(path)
   }, 300)
 
-  // tornar a lloc
+  // tornar
   setTimeout(()=>{
     card.classList.remove("flip")
   }, 600)
 }
 
-document.addEventListener("keydown", e=>{
-  if(e.key==="Enter") novaCarta()
-})
+function addThumb(path){
+  const board = document.getElementById("board")
+
+  const thumb = document.createElement("div")
+  thumb.className = "thumb"
+  thumb.draggable = true
+
+  const img = document.createElement("img")
+  const url = new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  img.src = url.toString()
+
+  const x = document.createElement("div")
+  x.className = "x"
+  x.textContent = "×"
+
+  thumb.appendChild(img)
+  thumb.appendChild(x)
+
+  // Doble clic per eliminar
+  thumb.addEventListener("dblclick", ()=>{
+    thumb.remove()
+  })
+
+  // Drag per reordenar dins la pissarra
+  thumb.addEventListener("dragstart", (e)=>{
+    draggedThumb = thumb
+    e.dataTransfer.setData("text/plain", "") // perquè el drop passi igualment
+    e.dataTransfer.effectAllowed = "move"
+  })
+
+  thumb.addEventListener("dragend", ()=>{
+    draggedThumb = null
+  })
+
+  board.appendChild(thumb)
+}
+
+/**
+ * Decideix quin element va “després” del punt on cau el cursor, per reordenar.
+ */
+function getDragAfterElement(container, x, y){
+  const els = [...container.querySelectorAll(".thumb:not(.dragging)")]
+  let closest = { offset: Number.NEGATIVE_INFINITY, element: null }
+
+  for(const el of els){
+    const rect = el.getBoundingClientRect()
+    const offset = (y - (rect.top + rect.height / 2)) * -1
+    if(offset < 0 && offset > closest.offset){
+      closest = { offset, element: el }
+    }
+  }
+  return closest.element
+}
 
 init()
 </script>
