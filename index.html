@@ -44,7 +44,7 @@ button{
 }
 
 /* =================================================
-   CARTA GRAN (animació rebot)
+   CARTA GRAN (rebot)
 ================================================= */
 
 .stage{
@@ -123,20 +123,20 @@ button{
 .board{
   position:relative;
   width:100%;
-  min-height:680px; /* 5 files mínim */
+  min-height:700px; /* 5+ files */
   background:white;
   border:2px dashed rgba(0,0,0,.2);
   border-radius:16px;
   overflow:hidden;
 }
 
-/* MINI-CARTES → NOMÉS IMATGE, PROPORCIÓ REAL */
+/* MINI-CARTES – més petites i proporció real */
 
 .thumb{
   position:absolute;
 
-  width:160px;
-  height:auto;           /* ← manté proporció natural */
+  width:120px;   /* ← més petit */
+  height:auto;
 
   border:none;
   background:transparent;
@@ -154,8 +154,8 @@ button{
 
 .thumb img{
   width:100%;
-  height:auto;           /* ← clau */
-  object-fit:contain;    /* ← NO retalla */
+  height:auto;
+  object-fit:contain;
   pointer-events:none;
 }
 
@@ -245,6 +245,7 @@ async function init(){
     if(!path) return
 
     const rect=board.getBoundingClientRect()
+
     addThumb(path, e.clientX-rect.left, e.clientY-rect.top)
   })
 
@@ -295,8 +296,9 @@ function addThumb(path,x,y){
 
   t.appendChild(img)
 
-  t.style.left=(x-80)+"px"
-  t.style.top=(y-60)+"px"
+  /* centrat segons nova mida (120px aprox) */
+  t.style.left=(x-60)+"px"
+  t.style.top=(y-45)+"px"
 
   t.ondblclick=()=>t.remove()
 
