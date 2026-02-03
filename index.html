@@ -147,9 +147,7 @@
     flex-wrap:wrap;
   }
 
-  .boardTitle{
-    font-weight:650;
-  }
+  .boardTitle{ font-weight:650; }
 
   .zoomBar{
     display:flex;
@@ -207,14 +205,12 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
-  /* Base sempre a sota */
   .freeBase{
     position:absolute;
     inset:0;
     z-index: 1;
     pointer-events:none;
   }
-  /* Tot el que arrossegues a sobre */
   .freeOverlay{
     position:absolute;
     inset:0;
@@ -269,12 +265,10 @@
 
   /* ===== STRUCTURED MODE ===== */
   .structuredWrap{
-    transform-origin: 0 0;
     width: 100%;
     height: 100%;
     padding: 6px;
     box-sizing: border-box;
-    position:relative;
   }
 
   .structuredTop{
@@ -311,12 +305,31 @@
     font-size:13px;
   }
 
-  /* ✅ Columnes no s’inflen */
+  /* ✅ Àrea real de treball (la que es fa zoom + drop) */
+  .structuredArea{
+    position:relative;
+    transform-origin: 0 0;
+    min-height: 520px;
+  }
+
+  /* ✅ Flex: graella a l’esquerra + espai a la dreta */
+  .structuredBase{
+    position:relative;
+    z-index: 1;
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+
+  .matrixHolder{
+    flex: 0 0 auto;   /* NO s’estira */
+  }
+
+  /* ✅ Columnes: amplada raonable, no s’inflen */
   .matrix{
     display:grid;
     gap: var(--struct-gap);
     align-items:stretch;
-    width:100%;
     grid-template-columns: repeat(auto-fit, minmax(140px, 170px));
     justify-content: start;
   }
@@ -356,12 +369,18 @@
     display:block;
   }
 
-  .structuredBase{
-    position:relative;
-    z-index: 1;
+  /* ✅ Zona buida a la dreta per arrossegar cartes */
+  .structuredSpace{
+    flex: 1 1 auto;
+    min-width: 320px;
+    min-height: calc(5 * var(--struct-card-h) + 4 * var(--struct-gap) + 8px);
+    border-radius:14px;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
+    border: 1px dashed rgba(0,0,0,.18);
   }
 
-  /* Overlay per cartes arrossegades (sempre a sobre de la base) */
+  /* ✅ Overlay per cartes arrossegades (cobreix TOT: esquerra + dreta) */
   .structuredOverlay{
     position:absolute;
     inset: 0;
@@ -418,7 +437,6 @@
           <button class="zoomBtn" id="zoomIn" type="button">+</button>
         </div>
 
-        <!-- ✅ Export -->
         <button class="zoomBtn" id="btnExport" type="button">📸 Descarrega</button>
       </div>
 
@@ -446,11 +464,18 @@
           <span style="font-size:12px;opacity:.65;">(mínim 1 carta per columna)</span>
         </div>
 
-        <div class="structuredBase">
-          <div class="matrix" id="matrix"></div>
-        </div>
+        <!-- ✅ Àrea real (zoom + drop) -->
+        <div class="structuredArea" id="structuredArea">
+          <div class="structuredBase">
+            <div class="matrixHolder">
+              <div class="matrix" id="matrix"></div>
+            </div>
 
-        <div class="structuredOverlay" id="structuredOverlay"></div>
+            <div class="structuredSpace" id="structuredSpace" aria-label="Espai de treball"></div>
+          </div>
+
+          <div class="structuredOverlay" id="structuredOverlay"></div>
+        </div>
       </div>
 
     </div>
@@ -521,8 +546,6 @@ async function init(){
   updateZoomUI()
 
   document.getElementById("btnProposal").addEventListener("click", buildProposal)
-
-  /* ✅ Export PNG */
   document.getElementById("btnExport").addEventListener("click", exportPNG)
 
   // drag from main card
@@ -549,24 +572,23 @@ async function init(){
     addThumbToContainer(freeOverlay, path, x, y, "150px")
   })
 
-  // ✅ drop structuredWrap (NOT overlay) — robust
-  const structuredWrap = document.getElementById("structuredWrap")
-  structuredWrap.addEventListener("dragover", e=>{
+  // drop structuredArea (robust, i amb espai a la dreta)
+  const structuredArea = document.getElementById("structuredArea")
+  structuredArea.addEventListener("dragover", e=>{
     if(getMode()!=="structured") return
     e.preventDefault()
   })
-  structuredWrap.addEventListener("drop", e=>{
+  structuredArea.addEventListener("drop", e=>{
     e.preventDefault()
     if(getMode()!=="structured") return
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
 
-    const rect = structuredWrap.getBoundingClientRect()
+    const rect = structuredArea.getBoundingClientRect()
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
 
-    const structuredOverlay = document.getElementById("structuredOverlay")
-    addThumbToContainer(structuredOverlay, path, x, y, "140px")
+    addThumbToContainer(document.getElementById("structuredOverlay"), path, x, y, "140px")
   })
 
   carregarBaralla()
@@ -582,7 +604,8 @@ function setZoom(z){
   if(getMode()==="free"){
     document.getElementById("freeCanvas").style.transform = `scale(${zoom})`
   }else{
-    document.getElementById("structuredWrap").style.transform = `scale(${zoom})`
+    // ✅ fem zoom només sobre l’àrea (no sobre els controls)
+    document.getElementById("structuredArea").style.transform = `scale(${zoom})`
   }
 }
 
@@ -603,8 +626,9 @@ function applyMode(){
   }else{
     freeCanvas.classList.add("hidden")
     structured.classList.remove("hidden")
-    structured.style.transformOrigin="0 0"
-    structured.style.transform = `scale(${zoom})`
+    const area = document.getElementById("structuredArea")
+    area.style.transformOrigin="0 0"
+    area.style.transform = `scale(${zoom})`
   }
 }
 
@@ -800,23 +824,33 @@ function buildProposal(){
   }
 }
 
-/* ===== Export PNG ===== */
+/* ===== Export PNG (sense deformació pel zoom) ===== */
 async function exportPNG(){
-  // Exportem la pissarra activa (sense trencar res)
   const mode = getMode()
-  const target = (mode === "free")
-    ? document.getElementById("freeCanvas")
-    : document.getElementById("structuredWrap")
 
-  // Nom amb data/hora
+  const targetId = (mode === "free") ? "freeCanvas" : "structuredArea"
+  const target = document.getElementById(targetId)
+
   const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")
   const filename = `pissarra-rockin-${mode}-${stamp}.png`
 
-  // html2canvas (useCORS ajuda en alguns casos)
   const canvas = await html2canvas(target, {
     backgroundColor: "#ffffff",
     scale: 2,
-    useCORS: true
+    useCORS: true,
+    scrollX: 0,
+    scrollY: 0,
+    onclone: (doc) => {
+      const cloned = doc.getElementById(targetId)
+      if(cloned){
+        cloned.style.transform = "none"
+        cloned.style.transformOrigin = "0 0"
+      }
+      const free = doc.getElementById("freeCanvas")
+      if(free) free.style.transform = "none"
+      const struct = doc.getElementById("structuredArea")
+      if(struct) struct.style.transform = "none"
+    }
   })
 
   const link = document.createElement("a")
