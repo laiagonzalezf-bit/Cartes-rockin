@@ -43,7 +43,9 @@ button{
   cursor:pointer;
 }
 
-/* ---------- ESCENARI CARTA GRAN (REBOT) ---------- */
+/* =================================================
+   CARTA GRAN (animació rebot)
+================================================= */
 
 .stage{
   width:min(92vw, 980px);
@@ -102,7 +104,9 @@ button{
   opacity:.65;
 }
 
-/* ---------- PISSARRA ---------- */
+/* =================================================
+   PISSARRA
+================================================= */
 
 .board-wrap{
   width:min(92vw,1100px);
@@ -119,24 +123,24 @@ button{
 .board{
   position:relative;
   width:100%;
-  min-height:650px; /* ← 5+ files */
+  min-height:680px; /* 5 files mínim */
   background:white;
   border:2px dashed rgba(0,0,0,.2);
   border-radius:16px;
   overflow:hidden;
 }
 
-/* MINI-CARTES → NOMÉS IMATGE */
+/* MINI-CARTES → NOMÉS IMATGE, PROPORCIÓ REAL */
 
 .thumb{
   position:absolute;
+
   width:160px;
-  height:110px;
+  height:auto;           /* ← manté proporció natural */
 
   border:none;
   background:transparent;
   box-shadow:none;
-  border-radius:0;
 
   cursor:grab;
   user-select:none;
@@ -150,9 +154,8 @@ button{
 
 .thumb img{
   width:100%;
-  height:100%;
-  object-fit:cover;
-  background:transparent;
+  height:auto;           /* ← clau */
+  object-fit:contain;    /* ← NO retalla */
   pointer-events:none;
 }
 
@@ -182,7 +185,7 @@ button{
 </div>
 
 <div class="hint">
-Enter = nova carta · arrossega la carta cap a la pissarra · mou-les lliurement · doble clic per eliminar
+Enter = nova carta · arrossega cap a la pissarra · mou-les lliurement · doble clic per eliminar
 </div>
 
 <div class="board-wrap">
@@ -237,6 +240,7 @@ async function init(){
 
   board.addEventListener("drop",e=>{
     e.preventDefault()
+
     const path=e.dataTransfer.getData("text/plain")
     if(!path) return
 
@@ -292,16 +296,16 @@ function addThumb(path,x,y){
   t.appendChild(img)
 
   t.style.left=(x-80)+"px"
-  t.style.top=(y-55)+"px"
+  t.style.top=(y-60)+"px"
 
   t.ondblclick=()=>t.remove()
 
-  makeDraggable(t,board)
+  makeDraggable(t)
 
   board.appendChild(t)
 }
 
-function makeDraggable(el,board){
+function makeDraggable(el){
   let startX,startY,origX,origY
 
   el.onpointerdown=e=>{
@@ -314,12 +318,8 @@ function makeDraggable(el,board){
 
   el.onpointermove=e=>{
     if(e.buttons!==1) return
-
-    const dx=e.clientX-startX
-    const dy=e.clientY-startY
-
-    el.style.left=(origX+dx)+"px"
-    el.style.top=(origY+dy)+"px"
+    el.style.left=(origX+e.clientX-startX)+"px"
+    el.style.top=(origY+e.clientY-startY)+"px"
   }
 }
 
