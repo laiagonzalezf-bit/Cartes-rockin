@@ -109,19 +109,20 @@ function carregarBaralla(){
   novaCarta()
 }
 
-// treure carta
 function novaCarta(){
 
-  // si s’han acabat → tornar a barrejar
   if(barallaRestant.length===0){
-    barallaRestant=shuffle([...barallaActual])
+    barallaRestant = shuffle([...barallaActual])
   }
 
-  const path=barallaRestant.pop()
+  const path = barallaRestant.pop()
 
-  // encodeURI arregla accents/espais (important!)
-  const safePath = path.split("/").map(encodeURIComponent).join("/");
-document.getElementById("img").src = safePath + "?t=" + Date.now();
+  const img = document.getElementById("img")
+
+  const url = new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+
+  img.src = url.toString()
 }
 
 // tecla ENTER
