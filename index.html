@@ -133,7 +133,7 @@
     padding:12px;
   }
 
-  /* Barra superior de la pissarra: controls a l'esquerra */
+  /* Barra superior de la pissarra */
   .boardTop{
     display:flex;
     align-items:center;
@@ -145,7 +145,8 @@
   .boardTopLeft{
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:10px;
+    flex-wrap:wrap;
   }
 
   .boardTitle{
@@ -171,14 +172,21 @@
     cursor:pointer;
   }
 
-  .zoomBtn:hover{ filter: brightness(0.98); }
-
   .zoomPct{
     font-size:12px;
     opacity:.75;
     width:46px;
     text-align:center;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* mode selector */
+  .modeSelect{
+    border:1px solid rgba(0,0,0,.12);
+    background:white;
+    border-radius:12px;
+    padding:8px 10px;
+    font-size:13px;
   }
 
   /* Contenidor amb scroll en 2 direccions */
@@ -193,8 +201,16 @@
     position:relative;
   }
 
-  /* Canvas gran (zoom via transform) */
-  .boardCanvas{
+  .muted{
+    font-size:12px;
+    opacity:.65;
+    margin-top:8px;
+    padding:0 2px;
+  }
+
+  /* ====== MODE 1: PISSARRA LLIURE ====== */
+
+  .freeCanvas{
     position:relative;
     width: 2600px;
     height: 1600px;
@@ -203,17 +219,14 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
-  /* mini-carta: mida per-element (editable) */
   .thumb{
     position:absolute;
     --w: 150px;
     width: var(--w);
     height:auto;
-
     border:none;
     background:transparent;
     box-shadow:none;
-
     cursor:grab;
     user-select:none;
     touch-action:none;
@@ -232,7 +245,6 @@
     display:block;
   }
 
-  /* Handle: per defecte ocult */
   .handle{
     position:absolute;
     right:-6px;
@@ -248,10 +260,9 @@
     opacity:0;
     transform: scale(0.85);
     transition: opacity .12s ease, transform .12s ease;
-    pointer-events:none; /* només actiu quan apareix */
+    pointer-events:none;
   }
 
-  /* Apareix quan passes el cursor per sobre (i quan està en “active”/drag) */
   .thumb:hover .handle,
   .thumb.is-active .handle{
     opacity:1;
@@ -259,12 +270,77 @@
     pointer-events:auto;
   }
 
-  .muted{
-    font-size:12px;
-    opacity:.65;
-    margin-top:8px;
-    padding:0 2px;
+  /* ====== MODE 2: PISSARRA ESTRUCTURADA ====== */
+
+  .structured{
+    transform-origin: 0 0;
+    width: 2600px;      /* ample gran perquè hi capiguin columnes */
+    min-height: 1600px;
+    padding: 14px;
+    box-sizing: border-box;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
   }
+
+  .columns{
+    display:grid;
+    gap:14px;
+    align-items:start;
+  }
+
+  .col{
+    background: rgba(255,255,255,.85);
+    border:1px solid rgba(0,0,0,.10);
+    border-radius:14px;
+    padding:10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    min-height: 240px;
+  }
+
+  .colTitle{
+    font-weight:650;
+    font-size:13px;
+    opacity:.85;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+  }
+
+  .colCards{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .optionCard{
+    width: 100%;
+    aspect-ratio: 2 / 3;      /* format carta consistent */
+    background: transparent;
+    border: none;
+  }
+
+  .optionCard img{
+    width:100%;
+    height:100%;
+    object-fit:contain;       /* no retalla */
+    display:block;
+  }
+
+  .miniBtn{
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 10px;
+    padding: 6px 10px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:12px;
+  }
+
+  .miniBtn:hover{ filter: brightness(.98); }
+
+  .hidden{ display:none !important; }
 </style>
 </head>
 
@@ -288,7 +364,7 @@
 
     <p class="hint">
       <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra ·
-      A la pissarra: <b>arrossega</b> per moure · passa el cursor per veure la <b>boleta</b> i canviar mida · <b>doble clic</b> per eliminar.
+      En mode lliure: mou + canvia mida per carta · En mode estructurat: genera opcions de Creació.
     </p>
   </div>
 
@@ -300,28 +376,53 @@
         <div class="boardTopLeft">
           <div class="boardTitle">Pissarra</div>
 
-          <!-- ZOOM a dalt-esquerra de la pissarra -->
+          <!-- Selector de mode -->
+          <select id="mode" class="modeSelect" aria-label="Mode pissarra">
+            <option value="free">Pissarra lliure</option>
+            <option value="structured">Pissarra estructurada</option>
+          </select>
+
+          <!-- Zoom -->
           <div class="zoomBar" aria-label="Zoom pissarra">
             <button class="zoomBtn" id="zoomOut" type="button">−</button>
             <div class="zoomPct" id="zoomPct">100%</div>
             <button class="zoomBtn" id="zoomIn" type="button">+</button>
           </div>
+
+          <!-- Botó només per estructurada -->
+          <button class="miniBtn hidden" id="btnGenerate" type="button">Genera opcions</button>
         </div>
 
         <div style="font-size:12px;opacity:.65;">scroll X/Y</div>
       </div>
 
       <div class="boardViewport" id="boardViewport">
-        <div class="boardCanvas" id="boardCanvas"></div>
+        <!-- MODE FREE -->
+        <div class="freeCanvas" id="freeCanvas"></div>
+
+        <!-- MODE STRUCTURED -->
+        <div class="structured hidden" id="structured">
+          <div class="columns" id="columns"></div>
+        </div>
       </div>
 
-      <div class="muted">Tip: amb trackpad és molt còmode fer scroll horitzontal; amb ratolí sovint és Shift+scroll.</div>
+      <div class="muted">El zoom afecta el mode actiu. Scroll vertical i horitzontal per moure’t per la pissarra gran.</div>
     </div>
   </div>
 
 </div>
 
 <script>
+/* =========================
+   PARÀMETRES ESTRUCTURADA
+   (modifica aquí)
+========================= */
+const STRUCT_COLS = 5          // X columnes verticals
+const MIN_OPTS = 1             // mínim d’opcions per columna
+const MAX_OPTS = 4             // màxim d’opcions per columna
+
+/* ========================= */
+
 let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
@@ -339,11 +440,13 @@ function shuffle(a){
   }
   return a
 }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)) }
 
 async function init(){
   const res = await fetch("manifest.json")
   MANIFEST = await res.json()
 
+  // deck selector
   const select = document.getElementById("deck")
   Object.keys(MANIFEST).forEach(b=>{
     const opt = document.createElement("option")
@@ -351,23 +454,28 @@ async function init(){
     opt.textContent = b
     select.appendChild(opt)
   })
-
   select.addEventListener("change", carregarBaralla)
+
   document.getElementById("btnNew").addEventListener("click", novaCarta)
-  document.getElementById("btnClear").addEventListener("click", ()=>{
-    document.getElementById("boardCanvas").innerHTML = ""
-  })
+  document.getElementById("btnClear").addEventListener("click", clearBoard)
 
   document.addEventListener("keydown", e=>{
     if(e.key === "Enter") novaCarta()
   })
 
-  // Zoom controls (a dalt-esquerra de la pissarra)
+  // zoom
   document.getElementById("zoomIn").addEventListener("click", ()=> setZoom(zoom + ZOOM_STEP))
   document.getElementById("zoomOut").addEventListener("click", ()=> setZoom(zoom - ZOOM_STEP))
   updateZoomUI()
 
-  // Drag de la carta gran cap a la pissarra
+  // mode selector
+  const modeSel = document.getElementById("mode")
+  modeSel.addEventListener("change", applyMode)
+
+  // generate structured
+  document.getElementById("btnGenerate").addEventListener("click", generateStructured)
+
+  // drag from main card -> free board only (when free active)
   const imgTop = document.getElementById("imgTop")
   imgTop.addEventListener("dragstart", (e)=>{
     if(!currentPath) return
@@ -375,16 +483,19 @@ async function init(){
     e.dataTransfer.effectAllowed = "copy"
   })
 
-  // Drop al canvas (interior), corregint coord per zoom
-  const canvas = document.getElementById("boardCanvas")
-  canvas.addEventListener("dragover", e => e.preventDefault())
-
-  canvas.addEventListener("drop", e=>{
+  // drop on free canvas
+  const freeCanvas = document.getElementById("freeCanvas")
+  freeCanvas.addEventListener("dragover", e => e.preventDefault())
+  freeCanvas.addEventListener("drop", e=>{
     e.preventDefault()
+
+    // si no estem en mode free, ignorem drop
+    if(getMode() !== "free") return
+
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
 
-    const rect = canvas.getBoundingClientRect()
+    const rect = freeCanvas.getBoundingClientRect()
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
 
@@ -393,12 +504,22 @@ async function init(){
 
   carregarBaralla()
   setZoom(1.0)
+  applyMode()
+}
+
+function getMode(){
+  return document.getElementById("mode").value
 }
 
 function setZoom(z){
   zoom = clamp(z, ZOOM_MIN, ZOOM_MAX)
-  const canvas = document.getElementById("boardCanvas")
-  canvas.style.transform = `scale(${zoom})`
+
+  // aplica zoom a qui estigui actiu
+  if(getMode() === "free"){
+    document.getElementById("freeCanvas").style.transform = `scale(${zoom})`
+  }else{
+    document.getElementById("structured").style.transform = `scale(${zoom})`
+  }
   updateZoomUI()
 }
 
@@ -406,9 +527,37 @@ function updateZoomUI(){
   document.getElementById("zoomPct").textContent = Math.round(zoom * 100) + "%"
 }
 
-function clamp(v,min,max){
-  return Math.max(min, Math.min(max, v))
+function applyMode(){
+  const mode = getMode()
+  const freeCanvas = document.getElementById("freeCanvas")
+  const structured = document.getElementById("structured")
+  const btnGen = document.getElementById("btnGenerate")
+
+  if(mode === "free"){
+    freeCanvas.classList.remove("hidden")
+    structured.classList.add("hidden")
+    btnGen.classList.add("hidden")
+
+    // assegura transform del free
+    freeCanvas.style.transformOrigin = "0 0"
+    freeCanvas.style.transform = `scale(${zoom})`
+  }else{
+    structured.classList.remove("hidden")
+    freeCanvas.classList.add("hidden")
+    btnGen.classList.remove("hidden")
+
+    // assegura transform de structured
+    structured.style.transformOrigin = "0 0"
+    structured.style.transform = `scale(${zoom})`
+
+    // si encara no hi ha res, generem
+    if(!document.getElementById("columns").children.length){
+      generateStructured()
+    }
+  }
 }
+
+/* ===== Randomització carta gran ===== */
 
 function carregarBaralla(){
   const deck = document.getElementById("deck").value
@@ -439,13 +588,14 @@ function novaCarta(){
   stage.classList.add("animate")
 }
 
-// --- Mini-carta: moure + redimensionar per element ---
+/* ===== Pissarra lliure: cartes movibles i redimensionables ===== */
+
 function addThumb(path, x, y){
-  const canvas = document.getElementById("boardCanvas")
+  const canvas = document.getElementById("freeCanvas")
 
   const t = document.createElement("div")
   t.className = "thumb"
-  t.style.setProperty("--w", "150px") // mida inicial
+  t.style.setProperty("--w", "150px")
 
   const img = document.createElement("img")
   const url = new URL(path, window.location.href)
@@ -493,7 +643,6 @@ function makeMovable(el, canvas){
     const dx = (e.clientX - startX) / zoom
     const dy = (e.clientY - startY) / zoom
 
-    // clamp dins canvas
     const canvasW = canvas.clientWidth
     const canvasH = canvas.clientHeight
 
@@ -556,6 +705,102 @@ function makeResizable(el, handle){
     resizing = false
     el.classList.remove("is-active")
   })
+}
+
+/* ===== Pissarra estructurada ===== */
+
+function normalizeKey(s){
+  // treu accents i passa a minúscules
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
+
+function findCreationDeckKey(){
+  const keys = Object.keys(MANIFEST)
+  const target = keys.find(k => normalizeKey(k).includes("creacio"))
+  return target || null
+}
+
+function generateStructured(){
+  const creationKey = findCreationDeckKey()
+  const colsWrap = document.getElementById("columns")
+  colsWrap.innerHTML = ""
+
+  // define grid columns
+  colsWrap.style.gridTemplateColumns = `repeat(${STRUCT_COLS}, minmax(220px, 1fr))`
+
+  if(!creationKey){
+    // si no trobem la baralla, mostrem un avís dins d’una columna
+    const c = document.createElement("div")
+    c.className = "col"
+    c.innerHTML = `
+      <div class="colTitle">No trobo la baralla “Creació”</div>
+      <div style="font-size:12px;opacity:.7;line-height:1.4">
+        Al manifest no hi ha cap clau que contingui “Creacio/Creació”.<br>
+        Revisa el nom de la carpeta/baralla al manifest.json.
+      </div>
+    `
+    colsWrap.appendChild(c)
+    return
+  }
+
+  // preparem un pool de cartes de creació
+  const pool = [...MANIFEST[creationKey]]
+  shuffle(pool)
+
+  for(let i=0;i<STRUCT_COLS;i++){
+    const nOpts = randInt(MIN_OPTS, MAX_OPTS)
+
+    const col = document.createElement("div")
+    col.className = "col"
+
+    const title = document.createElement("div")
+    title.className = "colTitle"
+    title.innerHTML = `<span>Columna ${i+1}</span><span style="opacity:.6">${nOpts} opcions</span>`
+
+    const cards = document.createElement("div")
+    cards.className = "colCards"
+
+    for(let j=0;j<nOpts;j++){
+      // si s'acaba el pool, tornem a barrejar
+      if(pool.length === 0){
+        pool.push(...MANIFEST[creationKey])
+        shuffle(pool)
+      }
+
+      const path = pool.pop()
+      const card = document.createElement("div")
+      card.className = "optionCard"
+
+      const img = document.createElement("img")
+      const url = new URL(path, window.location.href)
+      url.searchParams.set("t", Date.now())
+      img.src = url.toString()
+      img.alt = `Opció ${j+1}`
+
+      card.appendChild(img)
+      cards.appendChild(card)
+    }
+
+    col.appendChild(title)
+    col.appendChild(cards)
+    colsWrap.appendChild(col)
+  }
+}
+
+function randInt(min,max){
+  return Math.floor(Math.random()*(max-min+1)) + min
+}
+
+/* ===== Clear segons mode ===== */
+function clearBoard(){
+  if(getMode() === "free"){
+    document.getElementById("freeCanvas").innerHTML = ""
+  }else{
+    document.getElementById("columns").innerHTML = ""
+  }
 }
 
 init()
