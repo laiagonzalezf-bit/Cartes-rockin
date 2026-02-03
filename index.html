@@ -21,7 +21,7 @@ h1{
 }
 
 .controls{
-  margin-bottom:18px;
+  margin-bottom:20px;
 }
 
 select, button{
@@ -31,115 +31,63 @@ select, button{
   margin:6px;
 }
 
-select{
-  border:1px solid #ccc;
-  background:white;
-}
-
 button{
   background:#ffcc00;
   border:none;
   font-weight:bold;
   cursor:pointer;
-  transition: transform .05s ease, box-shadow .1s ease;
 }
 
-button:hover{
-  transform: translateY(-1px);
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
-}
+/* ---------- ESCENARI 3D ---------- */
 
-/* --- Escenari baralla --- */
 .stage{
-  width:min(92vw, 980px);
-  margin: 0 auto;
+  width:min(92vw, 900px);
+  margin:auto;
+  perspective:1200px;
 }
 
-.deck{
-  position: relative;
-  width: 100%;
-  height: min(76vh, 720px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  perspective: 1200px; /* per al flip */
-}
-
-/* “Carta” com a capa */
 .card{
+  position:relative;
+  width:100%;
+  height:min(75vh, 700px);
+  transform-style:preserve-3d;
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+  cursor:pointer;
+}
+
+/* gir */
+.card.flip{
+  transform: rotateY(180deg);
+}
+
+/* cares */
+.face{
   position:absolute;
-  width: 100%;
-  height: 100%;
-  max-height: min(76vh, 720px);
+  width:100%;
+  height:100%;
+  backface-visibility:hidden;
+  border-radius:18px;
+  overflow:hidden;
+  background:white;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius: 18px;
-  overflow:hidden;
-  background: white;
-  border: 1px solid rgba(0,0,0,.10);
-  box-shadow: 0 10px 30px rgba(0,0,0,.18);
-  transform-origin: 50% 60%;
 }
 
-/* Imatge dins la carta */
-.card img{
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display:block;
-  background: white;
+.face img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
 }
 
-/* Cartes del fons: una mica més petites, rotació suau */
-.card.back2{
-  transform: translateY(16px) scale(0.97) rotate(-1.2deg);
-  opacity: 0.60;
-  filter: saturate(0.95);
-}
-
-.card.back1{
-  transform: translateY(9px) scale(0.985) rotate(0.8deg);
-  opacity: 0.78;
-  filter: saturate(0.98);
-}
-
-/* Carta de dalt */
-.card.top{
-  transform: translateY(0) scale(1) rotate(0deg);
-  opacity: 1;
-}
-
-/* Animació de “treure carta” */
-.card.top.animate{
-  animation: deal 420ms cubic-bezier(.2,.9,.2,1);
-}
-
-/* Una mica de moviment a les cartes de sota per fer efecte baralla */
-.card.back1.bump{
-  animation: bump1 300ms ease;
-}
-.card.back2.bump{
-  animation: bump2 300ms ease;
-}
-
-@keyframes deal{
-  0%   { transform: translateY(0) scale(1) rotate(0deg); }
-  35%  { transform: translateY(-10px) scale(1.01) rotate(-0.6deg); }
-  70%  { transform: translateY(4px) scale(1) rotate(0.4deg) rotateY(10deg); }
-  100% { transform: translateY(0) scale(1) rotate(0deg); }
-}
-
-@keyframes bump1{
-  0%   { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
-  50%  { transform: translateY(7px) scale(0.99) rotate(0.6deg); }
-  100% { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
-}
-
-@keyframes bump2{
-  0%   { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
-  50%  { transform: translateY(14px) scale(0.975) rotate(-1.0deg); }
-  100% { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
+/* darrere (es veu quan gira) */
+.back{
+  transform: rotateY(180deg);
+  background:linear-gradient(135deg,#e9ecef,#d7dde5);
+  font-size:22px;
+  font-weight:600;
+  color:#666;
 }
 
 .info{
@@ -156,29 +104,32 @@ button:hover{
 
 <div class="controls">
   <select id="deck"></select>
-  <button id="btn" onclick="novaCarta()">Nova carta</button>
+  <button onclick="novaCarta()">Nova carta</button>
 </div>
 
 <div class="stage">
-  <div class="deck">
-    <!-- dues cartes “de fons” (mostren les anteriors) -->
-    <div class="card back2"><img id="imgBack2" alt=""></div>
-    <div class="card back1"><img id="imgBack1" alt=""></div>
 
-    <!-- carta actual -->
-    <div class="card top" id="topCard"><img id="imgTop" alt="Carta"></div>
+  <div class="card" id="card">
+
+    <!-- cara frontal -->
+    <div class="face front">
+      <img id="imgFront">
+    </div>
+
+    <!-- cara del darrere -->
+    <div class="face back">
+      🎵
+    </div>
+
   </div>
 
-  <div class="info">Prem ENTER per treure una nova carta</div>
+  <div class="info">Prem ENTER o fes clic a la carta</div>
 </div>
 
 <script>
 let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
-
-let last1 = null
-let last2 = null
 
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
@@ -203,6 +154,8 @@ async function init(){
 
   select.addEventListener("change", carregarBaralla)
 
+  document.getElementById("card").onclick = novaCarta
+
   carregarBaralla()
 }
 
@@ -210,57 +163,38 @@ function carregarBaralla(){
   const deck=document.getElementById("deck").value
   barallaActual=[...MANIFEST[deck]]
   barallaRestant=shuffle([...barallaActual])
-
-  // reset historial visual
-  last1 = null
-  last2 = null
-  document.getElementById("imgBack1").src = ""
-  document.getElementById("imgBack2").src = ""
-
   novaCarta()
 }
 
-function setImg(elId, path){
-  const el = document.getElementById(elId)
-  if(!path){
-    el.removeAttribute("src")
-    return
-  }
+function setImg(path){
+  const img = document.getElementById("imgFront")
   const url = new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
-  el.src = url.toString()
+  img.src = url.toString()
 }
 
 function novaCarta(){
+
   if(barallaRestant.length===0){
     barallaRestant = shuffle([...barallaActual])
   }
 
   const path = barallaRestant.pop()
 
-  // actualitza “historial” (perquè es vegin cartes anteriors al fons)
-  last2 = last1
-  last1 = path
+  const card = document.getElementById("card")
 
-  setImg("imgBack2", last2)
-  setImg("imgBack1", last1)
-  setImg("imgTop", path)
+  // girar
+  card.classList.add("flip")
 
-  // animació
-  const top = document.getElementById("topCard")
-  const b1 = document.querySelector(".card.back1")
-  const b2 = document.querySelector(".card.back2")
+  // quan està girada (mig segon), canviem imatge
+  setTimeout(()=>{
+    setImg(path)
+  }, 300)
 
-  top.classList.remove("animate")
-  b1.classList.remove("bump")
-  b2.classList.remove("bump")
-
-  // força reflow perquè l’animació sempre es re-dispari
-  void top.offsetWidth
-
-  top.classList.add("animate")
-  b1.classList.add("bump")
-  b2.classList.add("bump")
+  // tornar a lloc
+  setTimeout(()=>{
+    card.classList.remove("flip")
+  }, 600)
 }
 
 document.addEventListener("keydown", e=>{
