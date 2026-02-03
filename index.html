@@ -120,8 +120,8 @@ function novaCarta(){
   const path=barallaRestant.pop()
 
   // encodeURI arregla accents/espais (important!)
-  document.getElementById("img").src =
-    encodeURI(path) + "?t=" + Date.now()
+  const safePath = path.split("/").map(encodeURIComponent).join("/");
+document.getElementById("img").src = safePath + "?t=" + Date.now();
 }
 
 // tecla ENTER
