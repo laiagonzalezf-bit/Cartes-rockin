@@ -13,8 +13,9 @@
     --panel:#ffffff;
     --border:rgba(0,0,0,.18);
 
-    --struct-card-h: 78px;
-    --struct-gap: 6px;
+    /* ✅ ESTRUCTURADA: +15% més gran i menys aire */
+    --struct-card-h: 90px;   /* abans 78px */
+    --struct-gap: 4px;       /* abans 6px */
   }
 
   body{
@@ -42,6 +43,7 @@
     .layout{ grid-template-columns: 1fr; }
   }
 
+  /* ===== LEFT ===== */
   .left{
     background:var(--panel);
     border:1px solid var(--border);
@@ -84,6 +86,7 @@
     line-height:1.35;
   }
 
+  /* ===== MAIN CARD ===== */
   .cardStage{
     width:100%;
     height: 420px;
@@ -117,6 +120,7 @@
     user-select:none;
   }
 
+  /* ===== RIGHT / BOARD ===== */
   .boardWrap{
     background:var(--panel);
     border:1px solid var(--border);
@@ -198,6 +202,7 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
+  /* base (creació) sempre a sota, overlay sempre a sobre */
   .freeBase{
     position:absolute;
     inset:0;
@@ -300,22 +305,26 @@
     font-size:13px;
   }
 
+  /* ✅ Columnes amb amplada màxima (no s’inflen) */
   .matrix{
     display:grid;
     gap: var(--struct-gap);
     align-items:stretch;
     width:100%;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 170px));
+    justify-content: start;
   }
 
   .col{
-    border:1px solid rgba(0,0,0,.08);
+    border:1px solid rgba(0,0,0,.06);
     border-radius:12px;
     background: rgba(255,255,255,.95);
     overflow:hidden;
+
     display:grid;
     grid-template-rows: repeat(5, 1fr);
     gap: var(--struct-gap);
-    padding: var(--struct-gap);
+    padding: 4px;
     min-width:0;
   }
 
@@ -350,10 +359,10 @@
     position:absolute;
     inset: 0;
     z-index: 5;
-    pointer-events:none; /* capa transparent */
+    pointer-events:none;
   }
   .structuredOverlay .thumb{
-    pointer-events:auto; /* però les cartes sí */
+    pointer-events:auto;
   }
 
   .hidden{ display:none !important; }
@@ -379,7 +388,6 @@
 
     <p class="hint">
       <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra.
-      A estructurada: deixa-la anar i queda a sobre.
     </p>
   </div>
 
@@ -490,7 +498,7 @@ async function init(){
     e.dataTransfer.effectAllowed="copy"
   })
 
-  // drop in free overlay
+  // drop free overlay
   const freeOverlay = document.getElementById("freeOverlay")
   freeOverlay.addEventListener("dragover", e=>e.preventDefault())
   freeOverlay.addEventListener("drop", e=>{
@@ -505,7 +513,7 @@ async function init(){
     addThumbToContainer(freeOverlay, path, x, y, "150px")
   })
 
-  // ✅ IMPORTANT: drop in structuredWrap (NOT overlay)
+  // drop structuredWrap (robust)
   const structuredWrap = document.getElementById("structuredWrap")
   structuredWrap.addEventListener("dragover", e=>{
     if(getMode()!=="structured") return
@@ -521,8 +529,7 @@ async function init(){
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
 
-    const structuredOverlay = document.getElementById("structuredOverlay")
-    addThumbToContainer(structuredOverlay, path, x, y, "140px")
+    addThumbToContainer(document.getElementById("structuredOverlay"), path, x, y, "140px")
   })
 
   carregarBaralla()
@@ -541,11 +548,9 @@ function setZoom(z){
     document.getElementById("structuredWrap").style.transform = `scale(${zoom})`
   }
 }
-
 function updateZoomUI(){
   document.getElementById("zoomPct").textContent = Math.round(zoom*100) + "%"
 }
-
 function applyMode(){
   const mode = getMode()
   const freeCanvas = document.getElementById("freeCanvas")
@@ -570,14 +575,12 @@ function carregarBaralla(){
   barallaRestant = shuffle([...barallaActual])
   novaCarta()
 }
-
 function setMainImg(path){
   const img=document.getElementById("imgTop")
   const url=new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
   img.src=url.toString()
 }
-
 function novaCarta(){
   if(barallaRestant.length===0) barallaRestant = shuffle([...barallaActual])
   currentPath = barallaRestant.pop()
@@ -601,18 +604,15 @@ function createThumb(path, widthCss){
 
   const handle=document.createElement("div")
   handle.className="handle"
-  handle.title="Arrossega per canviar la mida"
 
   t.appendChild(img)
   t.appendChild(handle)
 
   t.addEventListener("dblclick", ()=>t.remove())
-
   makeMovable(t)
   makeResizable(t, handle)
   return t
 }
-
 function addThumbToContainer(container, path, x, y, widthCss){
   const t = createThumb(path, widthCss)
   const w = parseFloat(widthCss) || 150
@@ -623,7 +623,6 @@ function addThumbToContainer(container, path, x, y, widthCss){
 
 function makeMovable(el){
   let startX=0,startY=0,origL=0,origT=0,dragging=false
-
   el.addEventListener("pointerdown",(e)=>{
     if(e.target && e.target.classList.contains("handle")) return
     dragging=true
@@ -634,7 +633,6 @@ function makeMovable(el){
     origL=parseFloat(el.style.left||"0")
     origT=parseFloat(el.style.top||"0")
   })
-
   el.addEventListener("pointermove",(e)=>{
     if(!dragging) return
     const dx=(e.clientX-startX)/zoom
@@ -642,7 +640,6 @@ function makeMovable(el){
     el.style.left=(origL+dx)+"px"
     el.style.top=(origT+dy)+"px"
   })
-
   el.addEventListener("pointerup",(e)=>{
     dragging=false
     el.classList.remove("is-active")
@@ -656,7 +653,6 @@ function makeMovable(el){
 
 function makeResizable(el, handle){
   let startX=0,startW=150,resizing=false
-
   handle.addEventListener("pointerdown",(e)=>{
     resizing=true
     el.classList.add("is-active")
@@ -666,20 +662,18 @@ function makeResizable(el, handle){
     startW=parseFloat(getComputedStyle(el).getPropertyValue("--w"))||150
     e.preventDefault(); e.stopPropagation()
   })
-
   handle.addEventListener("pointermove",(e)=>{
     if(!resizing) return
     const dx=(e.clientX-startX)/zoom
     const newW=clamp(startW+dx,60,520)
     el.style.setProperty("--w",newW+"px")
   })
-
   handle.addEventListener("pointerup",(e)=>{
     resizing=false
     el.classList.remove("is-active")
     try{handle.releasePointerCapture(e.pointerId)}catch(_){}
   })
-  el.addEventListener("pointercancel",()=>{
+  handle.addEventListener("pointercancel",()=>{
     resizing=false
     el.classList.remove("is-active")
   })
@@ -689,7 +683,6 @@ function findCreationDeckKey(){
   const keys = Object.keys(MANIFEST)
   return keys.find(k => normalizeKey(k).includes("creacio")) || null
 }
-
 function buildCreationCardMap(){
   const key = findCreationDeckKey()
   if(!key) return { _error: true }
@@ -713,7 +706,6 @@ function buildProposal(){
 
   const matrix = document.getElementById("matrix")
   matrix.innerHTML = ""
-  matrix.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`
 
   const cardMap = buildCreationCardMap()
   if(cardMap._error) return
@@ -741,12 +733,10 @@ function buildProposal(){
         const url = new URL(cardMap[rowKey], window.location.href)
         url.searchParams.set("t", Date.now())
         img.src = url.toString()
-        img.alt = rowKey
         slot.appendChild(img)
       }else{
         slot.classList.add("empty")
       }
-
       col.appendChild(slot)
     }
     matrix.appendChild(col)
