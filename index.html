@@ -7,21 +7,21 @@
 <style>
 body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
-  background:#f6f7f9;      /* ← fons clar */
-  color:#222;             /* ← text fosc */
+  background:#f6f7f9;
+  color:#222;
   text-align:center;
   margin:0;
   padding:30px;
 }
 
 h1{
-  margin:0 0 20px 0;
+  margin:0 0 18px 0;
   font-size:30px;
   font-weight:600;
 }
 
 .controls{
-  margin-bottom:20px;
+  margin-bottom:18px;
 }
 
 select, button{
@@ -49,12 +49,97 @@ button:hover{
   box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
 
-img{
-  max-width:95%;
-  max-height:75vh;
-  border-radius:16px;
-  box-shadow:0 6px 18px rgba(0,0,0,.25); /* ombra més suau */
-  background:white;
+/* --- Escenari baralla --- */
+.stage{
+  width:min(92vw, 980px);
+  margin: 0 auto;
+}
+
+.deck{
+  position: relative;
+  width: 100%;
+  height: min(76vh, 720px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  perspective: 1200px; /* per al flip */
+}
+
+/* “Carta” com a capa */
+.card{
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  max-height: min(76vh, 720px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 18px;
+  overflow:hidden;
+  background: white;
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  transform-origin: 50% 60%;
+}
+
+/* Imatge dins la carta */
+.card img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display:block;
+  background: white;
+}
+
+/* Cartes del fons: una mica més petites, rotació suau */
+.card.back2{
+  transform: translateY(16px) scale(0.97) rotate(-1.2deg);
+  opacity: 0.60;
+  filter: saturate(0.95);
+}
+
+.card.back1{
+  transform: translateY(9px) scale(0.985) rotate(0.8deg);
+  opacity: 0.78;
+  filter: saturate(0.98);
+}
+
+/* Carta de dalt */
+.card.top{
+  transform: translateY(0) scale(1) rotate(0deg);
+  opacity: 1;
+}
+
+/* Animació de “treure carta” */
+.card.top.animate{
+  animation: deal 420ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* Una mica de moviment a les cartes de sota per fer efecte baralla */
+.card.back1.bump{
+  animation: bump1 300ms ease;
+}
+.card.back2.bump{
+  animation: bump2 300ms ease;
+}
+
+@keyframes deal{
+  0%   { transform: translateY(0) scale(1) rotate(0deg); }
+  35%  { transform: translateY(-10px) scale(1.01) rotate(-0.6deg); }
+  70%  { transform: translateY(4px) scale(1) rotate(0.4deg) rotateY(10deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes bump1{
+  0%   { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
+  50%  { transform: translateY(7px) scale(0.99) rotate(0.6deg); }
+  100% { transform: translateY(9px) scale(0.985) rotate(0.8deg); }
+}
+
+@keyframes bump2{
+  0%   { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
+  50%  { transform: translateY(14px) scale(0.975) rotate(-1.0deg); }
+  100% { transform: translateY(16px) scale(0.97) rotate(-1.2deg); }
 }
 
 .info{
@@ -71,13 +156,20 @@ img{
 
 <div class="controls">
   <select id="deck"></select>
-  <button onclick="novaCarta()">Nova carta</button>
+  <button id="btn" onclick="novaCarta()">Nova carta</button>
 </div>
 
-<img id="img">
+<div class="stage">
+  <div class="deck">
+    <!-- dues cartes “de fons” (mostren les anteriors) -->
+    <div class="card back2"><img id="imgBack2" alt=""></div>
+    <div class="card back1"><img id="imgBack1" alt=""></div>
 
-<div class="info">
-Prem ENTER per treure una nova carta
+    <!-- carta actual -->
+    <div class="card top" id="topCard"><img id="imgTop" alt="Carta"></div>
+  </div>
+
+  <div class="info">Prem ENTER per treure una nova carta</div>
 </div>
 
 <script>
@@ -85,7 +177,9 @@ let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
 
-// barrejar array
+let last1 = null
+let last2 = null
+
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1))
@@ -94,7 +188,6 @@ function shuffle(array){
   return array
 }
 
-// carregar manifest
 async function init(){
   const res = await fetch("manifest.json")
   MANIFEST = await res.json()
@@ -113,33 +206,63 @@ async function init(){
   carregarBaralla()
 }
 
-// carregar nova baralla
 function carregarBaralla(){
   const deck=document.getElementById("deck").value
   barallaActual=[...MANIFEST[deck]]
   barallaRestant=shuffle([...barallaActual])
+
+  // reset historial visual
+  last1 = null
+  last2 = null
+  document.getElementById("imgBack1").src = ""
+  document.getElementById("imgBack2").src = ""
+
   novaCarta()
 }
 
-// treure carta
-function novaCarta(){
+function setImg(elId, path){
+  const el = document.getElementById(elId)
+  if(!path){
+    el.removeAttribute("src")
+    return
+  }
+  const url = new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  el.src = url.toString()
+}
 
+function novaCarta(){
   if(barallaRestant.length===0){
     barallaRestant = shuffle([...barallaActual])
   }
 
   const path = barallaRestant.pop()
 
-  const img = document.getElementById("img")
+  // actualitza “historial” (perquè es vegin cartes anteriors al fons)
+  last2 = last1
+  last1 = path
 
-  // URL robusta (funciona amb GitHub Pages i subcarpetes)
-  const url = new URL(path, window.location.href)
-  url.searchParams.set("t", Date.now())
+  setImg("imgBack2", last2)
+  setImg("imgBack1", last1)
+  setImg("imgTop", path)
 
-  img.src = url.toString()
+  // animació
+  const top = document.getElementById("topCard")
+  const b1 = document.querySelector(".card.back1")
+  const b2 = document.querySelector(".card.back2")
+
+  top.classList.remove("animate")
+  b1.classList.remove("bump")
+  b2.classList.remove("bump")
+
+  // força reflow perquè l’animació sempre es re-dispari
+  void top.offsetWidth
+
+  top.classList.add("animate")
+  b1.classList.add("bump")
+  b2.classList.add("bump")
 }
 
-// tecla ENTER
 document.addEventListener("keydown", e=>{
   if(e.key==="Enter") novaCarta()
 })
