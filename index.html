@@ -7,50 +7,59 @@
 <style>
 body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
-  background:#111;
-  color:white;
+  background:#f6f7f9;      /* ← fons clar */
+  color:#222;             /* ← text fosc */
   text-align:center;
   margin:0;
-  padding:20px;
+  padding:30px;
 }
 
 h1{
-  margin:0 0 15px 0;
-  font-size:28px;
+  margin:0 0 20px 0;
+  font-size:30px;
+  font-weight:600;
 }
 
 .controls{
-  margin-bottom:15px;
+  margin-bottom:20px;
 }
 
 select, button{
   font-size:18px;
-  padding:10px 16px;
+  padding:12px 18px;
   border-radius:12px;
   margin:6px;
-  cursor:pointer;
+}
+
+select{
+  border:1px solid #ccc;
+  background:white;
 }
 
 button{
   background:#ffcc00;
   border:none;
   font-weight:bold;
+  cursor:pointer;
+  transition: transform .05s ease, box-shadow .1s ease;
 }
 
 button:hover{
-  background:#ffd84d;
+  transform: translateY(-1px);
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
 
 img{
   max-width:95%;
   max-height:75vh;
-  border-radius:14px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  border-radius:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.25); /* ombra més suau */
+  background:white;
 }
 
 .info{
-  margin-top:10px;
-  opacity:.7;
+  margin-top:14px;
+  opacity:.6;
   font-size:14px;
 }
 </style>
@@ -58,7 +67,7 @@ img{
 
 <body>
 
-<h1> Cartes Rockin</h1>
+<h1>Cartes Rockin</h1>
 
 <div class="controls">
   <select id="deck"></select>
@@ -66,14 +75,17 @@ img{
 </div>
 
 <img id="img">
-<div class="info">Prem ENTER per treure una nova carta</div>
+
+<div class="info">
+Prem ENTER per treure una nova carta
+</div>
 
 <script>
 let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
 
-// barrejar array (Fisher-Yates)
+// barrejar array
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1))
@@ -109,6 +121,7 @@ function carregarBaralla(){
   novaCarta()
 }
 
+// treure carta
 function novaCarta(){
 
   if(barallaRestant.length===0){
@@ -119,6 +132,7 @@ function novaCarta(){
 
   const img = document.getElementById("img")
 
+  // URL robusta (funciona amb GitHub Pages i subcarpetes)
   const url = new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
 
