@@ -12,6 +12,10 @@
     --accent:#ffcc00;
     --panel:#ffffff;
     --border:rgba(0,0,0,.18);
+
+    /* ESTRUCTURADA: mida compacta perquè càpiga tot sense scroll */
+    --struct-card-h: 64px;     /* alçada del slot de carta (baixa-ho si cal) */
+    --struct-gap: 6px;         /* espais dins la graella */
   }
 
   body{
@@ -29,19 +33,17 @@
     text-align:left;
   }
 
-  /* ===== Layout 2 columnes ===== */
   .layout{
     display:grid;
     grid-template-columns: 360px 1fr;
     gap:14px;
     align-items:start;
   }
-
   @media (max-width: 980px){
     .layout{ grid-template-columns: 1fr; }
   }
 
-  /* ===== Panell esquerra ===== */
+  /* ===== LEFT ===== */
   .left{
     background:var(--panel);
     border:1px solid var(--border);
@@ -58,7 +60,7 @@
     margin-bottom:10px;
   }
 
-  select, button{
+  select, button, input{
     font-size:14px;
     padding:10px 12px;
     border-radius:12px;
@@ -84,7 +86,7 @@
     line-height:1.35;
   }
 
-  /* ===== Carta gran (rebot) ===== */
+  /* ===== MAIN CARD ===== */
   .cardStage{
     width:100%;
     height: 420px;
@@ -118,13 +120,7 @@
     user-select:none;
   }
 
-  /* ===== Pissarra dreta ===== */
-  .right{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
+  /* ===== RIGHT / BOARD ===== */
   .boardWrap{
     background:var(--panel);
     border:1px solid var(--border);
@@ -133,7 +129,6 @@
     padding:12px;
   }
 
-  /* Barra superior de la pissarra */
   .boardTop{
     display:flex;
     align-items:center;
@@ -180,7 +175,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* mode selector */
   .modeSelect{
     border:1px solid rgba(0,0,0,.12);
     background:white;
@@ -189,7 +183,6 @@
     font-size:13px;
   }
 
-  /* Contenidor amb scroll en 2 direccions */
   .boardViewport{
     width:100%;
     height: 76vh;
@@ -205,11 +198,9 @@
     font-size:12px;
     opacity:.65;
     margin-top:8px;
-    padding:0 2px;
   }
 
-  /* ====== MODE 1: PISSARRA LLIURE ====== */
-
+  /* ===== FREE MODE CANVAS ===== */
   .freeCanvas{
     position:relative;
     width: 2600px;
@@ -219,6 +210,7 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
+  /* ===== Thumb (overlay draggable) ===== */
   .thumb{
     position:absolute;
     --w: 150px;
@@ -232,16 +224,11 @@
     touch-action:none;
   }
 
-  .thumb:active{
-    cursor:grabbing;
-  }
-
   .thumb img{
     width:100%;
     height:auto;
     object-fit:contain;
     pointer-events:none;
-    background:transparent;
     display:block;
   }
 
@@ -270,75 +257,132 @@
     pointer-events:auto;
   }
 
-  /* ====== MODE 2: PISSARRA ESTRUCTURADA ====== */
-
-  .structured{
+  /* ===== STRUCTURED MODE (no scroll intended) ===== */
+  .structuredWrap{
     transform-origin: 0 0;
-    width: 2600px;      /* ample gran perquè hi capiguin columnes */
-    min-height: 1600px;
-    padding: 14px;
-    box-sizing: border-box;
-    background:
-      radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
-  }
-
-  .columns{
-    display:grid;
-    gap:14px;
-    align-items:start;
-  }
-
-  .col{
-    background: rgba(255,255,255,.85);
-    border:1px solid rgba(0,0,0,.10);
-    border-radius:14px;
-    padding:10px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.06);
-    min-height: 240px;
-  }
-
-  .colTitle{
-    font-weight:650;
-    font-size:13px;
-    opacity:.85;
-    margin-bottom:10px;
-    display:flex;
-    justify-content:space-between;
-    gap:8px;
-    align-items:center;
-  }
-
-  .colCards{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .optionCard{
     width: 100%;
-    aspect-ratio: 2 / 3;      /* format carta consistent */
-    background: transparent;
-    border: none;
+    height: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+    position:relative;
   }
 
-  .optionCard img{
-    width:100%;
-    height:100%;
-    object-fit:contain;       /* no retalla */
-    display:block;
+  .structuredTop{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+
+  .structuredTop label{
+    font-size:12px;
+    opacity:.85;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .numInput{
+    width:88px;
+    border:1px solid rgba(0,0,0,.18);
+    background:white;
+    padding:7px 10px;
+    border-radius:12px;
   }
 
   .miniBtn{
-    background: #fff;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: 10px;
-    padding: 6px 10px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,.15);
+    border-radius:12px;
+    padding:7px 10px;
     cursor:pointer;
     font-weight:700;
-    font-size:12px;
+    font-size:13px;
   }
 
-  .miniBtn:hover{ filter: brightness(.98); }
+  /* la graella que ha de cabre */
+  .matrix{
+    display:grid;
+    gap: var(--struct-gap);
+    align-items:stretch;
+    width:100%;
+  }
+
+  .col{
+    border:1px solid rgba(0,0,0,.10);
+    border-radius:12px;
+    background: rgba(255,255,255,.92);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
+
+  .colHeader{
+    font-weight:650;
+    font-size:11px;
+    padding:6px 8px;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    opacity:.85;
+    background: rgba(0,0,0,.02);
+  }
+
+  .cell{
+    border-bottom:1px dashed rgba(0,0,0,.08);
+    padding:6px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .cell:last-child{ border-bottom:none; }
+
+  .rowLabel{
+    font-size:10px;
+    opacity:.6;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    line-height:1;
+  }
+
+  /* slot ultra compacte */
+  .cardSlot{
+    width:100%;
+    height: var(--struct-card-h);
+    border-radius:10px;
+    background: rgba(0,0,0,.03);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .cardSlot.empty{
+    background: rgba(0,0,0,.015);
+  }
+
+  .cardSlot img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+
+  /* capa base i overlay dins estructurada */
+  .structuredBase{
+    position:relative;
+    z-index: 1; /* sempre a sota */
+  }
+  .structuredOverlay{
+    position:absolute;
+    inset: 0;
+    z-index: 5; /* sempre a sobre */
+    pointer-events:none; /* IMPORTANT: deixem que la base encara sigui usable */
+  }
+  /* però les thumbs de l’overlay han de rebre events */
+  .structuredOverlay .thumb{
+    pointer-events:auto;
+  }
 
   .hidden{ display:none !important; }
 </style>
@@ -350,7 +394,7 @@
 
 <div class="layout">
 
-  <!-- ESQUERRA -->
+  <!-- LEFT -->
   <div class="left">
     <div class="controls">
       <select id="deck"></select>
@@ -363,66 +407,87 @@
     </div>
 
     <p class="hint">
-      <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra ·
-      En mode lliure: mou + canvia mida per carta · En mode estructurat: genera opcions de Creació.
+      <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra.
+      A estructurada, la carta cau com a <b>overlay</b> per sobre de les cartes de creació.
     </p>
   </div>
 
-  <!-- DRETA -->
-  <div class="right">
-    <div class="boardWrap">
+  <!-- RIGHT -->
+  <div class="boardWrap">
 
-      <div class="boardTop">
-        <div class="boardTopLeft">
-          <div class="boardTitle">Pissarra</div>
+    <div class="boardTop">
+      <div class="boardTopLeft">
+        <div class="boardTitle">Pissarra</div>
 
-          <!-- Selector de mode -->
-          <select id="mode" class="modeSelect" aria-label="Mode pissarra">
-            <option value="free">Pissarra lliure</option>
-            <option value="structured">Pissarra estructurada</option>
-          </select>
+        <select id="mode" class="modeSelect" aria-label="Mode pissarra">
+          <option value="free">Pissarra lliure</option>
+          <option value="structured">Pissarra estructurada</option>
+        </select>
 
-          <!-- Zoom -->
-          <div class="zoomBar" aria-label="Zoom pissarra">
-            <button class="zoomBtn" id="zoomOut" type="button">−</button>
-            <div class="zoomPct" id="zoomPct">100%</div>
-            <button class="zoomBtn" id="zoomIn" type="button">+</button>
-          </div>
-
-          <!-- Botó només per estructurada -->
-          <button class="miniBtn hidden" id="btnGenerate" type="button">Genera opcions</button>
-        </div>
-
-        <div style="font-size:12px;opacity:.65;">scroll X/Y</div>
-      </div>
-
-      <div class="boardViewport" id="boardViewport">
-        <!-- MODE FREE -->
-        <div class="freeCanvas" id="freeCanvas"></div>
-
-        <!-- MODE STRUCTURED -->
-        <div class="structured hidden" id="structured">
-          <div class="columns" id="columns"></div>
+        <div class="zoomBar" aria-label="Zoom pissarra">
+          <button class="zoomBtn" id="zoomOut" type="button">−</button>
+          <div class="zoomPct" id="zoomPct">100%</div>
+          <button class="zoomBtn" id="zoomIn" type="button">+</button>
         </div>
       </div>
 
-      <div class="muted">El zoom afecta el mode actiu. Scroll vertical i horitzontal per moure’t per la pissarra gran.</div>
+      <div style="font-size:12px;opacity:.65;">scroll X/Y</div>
     </div>
+
+    <div class="boardViewport" id="boardViewport">
+
+      <!-- FREE -->
+      <div class="freeCanvas" id="freeCanvas"></div>
+
+      <!-- STRUCTURED -->
+      <div class="structuredWrap hidden" id="structuredWrap">
+        <div class="structuredTop">
+          <label>
+            <b>Columnes</b>
+            <input id="colInput" class="numInput" type="number" min="1" max="10" value="5" />
+          </label>
+
+          <button class="miniBtn" id="btnProposal" type="button">Fes proposta aleatòria</button>
+
+          <span style="font-size:12px;opacity:.65;">
+            (mínim 1 carta per columna)
+          </span>
+        </div>
+
+        <!-- BASE (creació) -->
+        <div class="structuredBase">
+          <div class="matrix" id="matrix"></div>
+        </div>
+
+        <!-- OVERLAY (altres cartes a sobre) -->
+        <div class="structuredOverlay" id="structuredOverlay"></div>
+
+        <div class="muted">
+          Les cartes de creació queden a sota; qualsevol carta que arrosseguis queda a sobre.
+          Doble clic a una carta overlay per eliminar-la.
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
 </div>
 
 <script>
-/* =========================
-   PARÀMETRES ESTRUCTURADA
-   (modifica aquí)
-========================= */
-const STRUCT_COLS = 5          // X columnes verticals
-const MIN_OPTS = 1             // mínim d’opcions per columna
-const MAX_OPTS = 4             // màxim d’opcions per columna
+/* ===== Config estructurada ===== */
+const ROWS = [
+  { key:"bateria",  label:"Bateria"  },
+  { key:"teclat",   label:"Teclat"   },
+  { key:"veu",      label:"Veu"      },
+  { key:"baix",     label:"Baix"     },
+  { key:"guitarra", label:"Guitarra" }
+]
 
-/* ========================= */
+// probabilitat base (per fila) però assegurarem mínim 1 per columna
+const PRESENCE_PROB = 0.55
 
+/* ===== Estat ===== */
 let MANIFEST = {}
 let barallaActual = []
 let barallaRestant = []
@@ -442,25 +507,36 @@ function shuffle(a){
 }
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)) }
 
+function normalizeKey(s){
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
+
+function getMode(){
+  return document.getElementById("mode").value
+}
+
 async function init(){
-  const res = await fetch("manifest.json")
-  MANIFEST = await res.json()
+  MANIFEST = await (await fetch("manifest.json")).json()
 
   // deck selector
   const select = document.getElementById("deck")
   Object.keys(MANIFEST).forEach(b=>{
-    const opt = document.createElement("option")
-    opt.value = b
-    opt.textContent = b
+    const opt=document.createElement("option")
+    opt.value=b
+    opt.textContent=b
     select.appendChild(opt)
   })
   select.addEventListener("change", carregarBaralla)
 
   document.getElementById("btnNew").addEventListener("click", novaCarta)
   document.getElementById("btnClear").addEventListener("click", clearBoard)
+  document.getElementById("mode").addEventListener("change", applyMode)
 
   document.addEventListener("keydown", e=>{
-    if(e.key === "Enter") novaCarta()
+    if(e.key==="Enter") novaCarta()
   })
 
   // zoom
@@ -468,97 +544,95 @@ async function init(){
   document.getElementById("zoomOut").addEventListener("click", ()=> setZoom(zoom - ZOOM_STEP))
   updateZoomUI()
 
-  // mode selector
-  const modeSel = document.getElementById("mode")
-  modeSel.addEventListener("change", applyMode)
+  // structured proposal
+  document.getElementById("btnProposal").addEventListener("click", buildProposal)
 
-  // generate structured
-  document.getElementById("btnGenerate").addEventListener("click", generateStructured)
-
-  // drag from main card -> free board only (when free active)
+  // drag from main -> depending on mode
   const imgTop = document.getElementById("imgTop")
   imgTop.addEventListener("dragstart", (e)=>{
     if(!currentPath) return
     e.dataTransfer.setData("text/plain", currentPath)
-    e.dataTransfer.effectAllowed = "copy"
+    e.dataTransfer.effectAllowed="copy"
   })
 
-  // drop on free canvas
+  // drop targets
   const freeCanvas = document.getElementById("freeCanvas")
-  freeCanvas.addEventListener("dragover", e => e.preventDefault())
+  freeCanvas.addEventListener("dragover", e=>e.preventDefault())
   freeCanvas.addEventListener("drop", e=>{
     e.preventDefault()
-
-    // si no estem en mode free, ignorem drop
-    if(getMode() !== "free") return
-
+    if(getMode()!=="free") return
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
-
     const rect = freeCanvas.getBoundingClientRect()
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
+    addThumbToFree(path, x, y)
+  })
 
-    addThumb(path, x, y)
+  const overlay = document.getElementById("structuredOverlay")
+  overlay.addEventListener("dragover", e=>e.preventDefault())
+  overlay.addEventListener("drop", e=>{
+    e.preventDefault()
+    if(getMode()!=="structured") return
+    const path = e.dataTransfer.getData("text/plain")
+    if(!path) return
+
+    // coordenades relatives al structuredWrap (no al viewport)
+    const wrap = document.getElementById("structuredWrap")
+    const rect = wrap.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / zoom
+    const y = (e.clientY - rect.top) / zoom
+
+    addThumbToStructuredOverlay(path, x, y)
+  })
+
+  // input columnes: reconstruïm proposta quan canviï (opcional)
+  document.getElementById("colInput").addEventListener("change", ()=>{
+    // no fem proposta automàtica; només preparem i deixem el botó
+    // però si vols que regeneri al canvi, descomenta:
+    // buildProposal()
   })
 
   carregarBaralla()
   setZoom(1.0)
   applyMode()
-}
-
-function getMode(){
-  return document.getElementById("mode").value
+  buildProposal()
 }
 
 function setZoom(z){
   zoom = clamp(z, ZOOM_MIN, ZOOM_MAX)
+  updateZoomUI()
 
-  // aplica zoom a qui estigui actiu
-  if(getMode() === "free"){
+  if(getMode()==="free"){
     document.getElementById("freeCanvas").style.transform = `scale(${zoom})`
   }else{
-    document.getElementById("structured").style.transform = `scale(${zoom})`
+    document.getElementById("structuredWrap").style.transform = `scale(${zoom})`
   }
-  updateZoomUI()
 }
 
 function updateZoomUI(){
-  document.getElementById("zoomPct").textContent = Math.round(zoom * 100) + "%"
+  document.getElementById("zoomPct").textContent = Math.round(zoom*100) + "%"
 }
 
 function applyMode(){
   const mode = getMode()
   const freeCanvas = document.getElementById("freeCanvas")
-  const structured = document.getElementById("structured")
-  const btnGen = document.getElementById("btnGenerate")
+  const structured = document.getElementById("structuredWrap")
 
-  if(mode === "free"){
-    freeCanvas.classList.remove("hidden")
+  if(mode==="free"){
     structured.classList.add("hidden")
-    btnGen.classList.add("hidden")
-
-    // assegura transform del free
-    freeCanvas.style.transformOrigin = "0 0"
+    freeCanvas.classList.remove("hidden")
+    freeCanvas.style.transformOrigin="0 0"
     freeCanvas.style.transform = `scale(${zoom})`
   }else{
-    structured.classList.remove("hidden")
     freeCanvas.classList.add("hidden")
-    btnGen.classList.remove("hidden")
-
-    // assegura transform de structured
-    structured.style.transformOrigin = "0 0"
+    structured.classList.remove("hidden")
+    structured.style.transformOrigin="0 0"
     structured.style.transform = `scale(${zoom})`
-
-    // si encara no hi ha res, generem
-    if(!document.getElementById("columns").children.length){
-      generateStructured()
-    }
   }
 }
 
-/* ===== Randomització carta gran ===== */
-
+/* ===== Carta gran ===== */
 function carregarBaralla(){
   const deck = document.getElementById("deck").value
   barallaActual = [...MANIFEST[deck]]
@@ -567,239 +641,273 @@ function carregarBaralla(){
 }
 
 function setMainImg(path){
-  const img = document.getElementById("imgTop")
-  const url = new URL(path, window.location.href)
+  const img=document.getElementById("imgTop")
+  const url=new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
-  img.src = url.toString()
+  img.src=url.toString()
 }
 
 function novaCarta(){
-  if(barallaRestant.length === 0){
-    barallaRestant = shuffle([...barallaActual])
-  }
+  if(barallaRestant.length===0) barallaRestant = shuffle([...barallaActual])
+  currentPath = barallaRestant.pop()
+  setMainImg(currentPath)
 
-  const path = barallaRestant.pop()
-  currentPath = path
-  setMainImg(path)
-
-  const stage = document.getElementById("cardStage")
+  const stage=document.getElementById("cardStage")
   stage.classList.remove("animate")
   void stage.offsetWidth
   stage.classList.add("animate")
 }
 
-/* ===== Pissarra lliure: cartes movibles i redimensionables ===== */
+/* ===== Free board thumbs ===== */
+function addThumbToFree(path, x, y){
+  const canvas=document.getElementById("freeCanvas")
+  const t = createThumb(path)
+  t.style.left=(x-75)+"px"
+  t.style.top=(y-90)+"px"
+  makeMovable(t, canvas, () => zoom)
+  canvas.appendChild(t)
+}
 
-function addThumb(path, x, y){
-  const canvas = document.getElementById("freeCanvas")
+/* ===== Structured overlay thumbs ===== */
+function addThumbToStructuredOverlay(path, x, y){
+  const overlay=document.getElementById("structuredOverlay")
+  const t = createThumb(path)
 
-  const t = document.createElement("div")
-  t.className = "thumb"
-  t.style.setProperty("--w", "150px")
+  // una mica més petita per defecte, perquè no tapi massa
+  t.style.setProperty("--w","140px")
 
-  const img = document.createElement("img")
-  const url = new URL(path, window.location.href)
+  t.style.left=(x-70)+"px"
+  t.style.top=(y-80)+"px"
+
+  makeMovable(t, overlay, () => zoom)
+  overlay.appendChild(t)
+}
+
+function createThumb(path){
+  const t=document.createElement("div")
+  t.className="thumb"
+  t.style.setProperty("--w","150px")
+
+  const img=document.createElement("img")
+  const url=new URL(path, window.location.href)
   url.searchParams.set("t", Date.now())
-  img.src = url.toString()
+  img.src=url.toString()
 
-  const handle = document.createElement("div")
-  handle.className = "handle"
-  handle.title = "Arrossega per canviar la mida"
+  const handle=document.createElement("div")
+  handle.className="handle"
+  handle.title="Arrossega per canviar la mida"
 
   t.appendChild(img)
   t.appendChild(handle)
 
-  t.style.left = (x - 75) + "px"
-  t.style.top  = (y - 90) + "px"
+  // eliminar
+  t.addEventListener("dblclick", ()=>t.remove())
 
-  t.addEventListener("dblclick", ()=> t.remove())
-
-  makeMovable(t, canvas)
-  makeResizable(t, handle)
-
-  canvas.appendChild(t)
+  makeResizable(t, handle, () => zoom)
+  return t
 }
 
-function makeMovable(el, canvas){
-  let startX=0, startY=0, origL=0, origT=0
-  let dragging = false
+function makeMovable(el, container, getZoom){
+  let startX=0,startY=0,origL=0,origT=0,dragging=false
 
-  el.addEventListener("pointerdown", (e)=>{
+  el.addEventListener("pointerdown",(e)=>{
     if(e.target && e.target.classList.contains("handle")) return
-
-    dragging = true
+    dragging=true
     el.classList.add("is-active")
     el.setPointerCapture(e.pointerId)
-    el.style.zIndex = String(Date.now())
+    el.style.zIndex=String(Date.now())
 
-    startX = e.clientX
-    startY = e.clientY
-    origL = parseFloat(el.style.left || "0")
-    origT = parseFloat(el.style.top  || "0")
+    startX=e.clientX; startY=e.clientY
+    origL=parseFloat(el.style.left||"0")
+    origT=parseFloat(el.style.top||"0")
   })
 
-  el.addEventListener("pointermove", (e)=>{
+  el.addEventListener("pointermove",(e)=>{
     if(!dragging) return
-    const dx = (e.clientX - startX) / zoom
-    const dy = (e.clientY - startY) / zoom
+    const z = getZoom()
+    const dx=(e.clientX-startX)/z
+    const dy=(e.clientY-startY)/z
 
-    const canvasW = canvas.clientWidth
-    const canvasH = canvas.clientHeight
+    const containerW = container.clientWidth
+    const containerH = container.clientHeight
 
-    const w = el.getBoundingClientRect().width / zoom
-    const h = el.getBoundingClientRect().height / zoom
+    const w = el.getBoundingClientRect().width / z
+    const h = el.getBoundingClientRect().height / z
 
-    let newL = origL + dx
-    let newT = origT + dy
+    let newL=origL+dx
+    let newT=origT+dy
 
-    newL = clamp(newL, 0, canvasW - w)
-    newT = clamp(newT, 0, canvasH - h)
+    newL=clamp(newL,0,containerW-w)
+    newT=clamp(newT,0,containerH-h)
 
-    el.style.left = newL + "px"
-    el.style.top  = newT + "px"
+    el.style.left=newL+"px"
+    el.style.top=newT+"px"
   })
 
-  el.addEventListener("pointerup", (e)=>{
-    dragging = false
+  el.addEventListener("pointerup",(e)=>{
+    dragging=false
     el.classList.remove("is-active")
-    try{ el.releasePointerCapture(e.pointerId) }catch(_){}
+    try{el.releasePointerCapture(e.pointerId)}catch(_){}
   })
-
-  el.addEventListener("pointercancel", ()=>{
-    dragging = false
+  el.addEventListener("pointercancel",()=>{
+    dragging=false
     el.classList.remove("is-active")
   })
 }
 
-function makeResizable(el, handle){
-  let startX=0, startW=150
-  let resizing = false
+function makeResizable(el, handle, getZoom){
+  let startX=0,startW=150,resizing=false
 
-  handle.addEventListener("pointerdown", (e)=>{
-    resizing = true
+  handle.addEventListener("pointerdown",(e)=>{
+    resizing=true
     el.classList.add("is-active")
     handle.setPointerCapture(e.pointerId)
-    el.style.zIndex = String(Date.now())
-
-    startX = e.clientX
-    startW = parseFloat(getComputedStyle(el).getPropertyValue("--w")) || 150
-
-    e.preventDefault()
-    e.stopPropagation()
+    el.style.zIndex=String(Date.now())
+    startX=e.clientX
+    startW=parseFloat(getComputedStyle(el).getPropertyValue("--w"))||150
+    e.preventDefault(); e.stopPropagation()
   })
 
-  handle.addEventListener("pointermove", (e)=>{
+  handle.addEventListener("pointermove",(e)=>{
     if(!resizing) return
-    const dx = (e.clientX - startX) / zoom
-    const newW = clamp(startW + dx, 60, 520)
-    el.style.setProperty("--w", newW + "px")
+    const z = getZoom()
+    const dx=(e.clientX-startX)/z
+    const newW=clamp(startW+dx,60,520)
+    el.style.setProperty("--w",newW+"px")
   })
 
-  handle.addEventListener("pointerup", (e)=>{
-    resizing = false
+  handle.addEventListener("pointerup",(e)=>{
+    resizing=false
     el.classList.remove("is-active")
-    try{ handle.releasePointerCapture(e.pointerId) }catch(_){}
+    try{handle.releasePointerCapture(e.pointerId)}catch(_){}
   })
-
-  handle.addEventListener("pointercancel", ()=>{
-    resizing = false
+  handle.addEventListener("pointercancel",()=>{
+    resizing=false
     el.classList.remove("is-active")
   })
 }
 
-/* ===== Pissarra estructurada ===== */
-
-function normalizeKey(s){
-  // treu accents i passa a minúscules
-  return (s || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-}
-
+/* ===== Structured proposal logic ===== */
 function findCreationDeckKey(){
   const keys = Object.keys(MANIFEST)
-  const target = keys.find(k => normalizeKey(k).includes("creacio"))
-  return target || null
+  return keys.find(k => normalizeKey(k).includes("creacio")) || null
 }
 
-function generateStructured(){
-  const creationKey = findCreationDeckKey()
-  const colsWrap = document.getElementById("columns")
-  colsWrap.innerHTML = ""
+function buildCreationCardMap(){
+  const key = findCreationDeckKey()
+  if(!key) return { _error: "No trobo cap baralla amb 'Creacio/Creació' al manifest." }
 
-  // define grid columns
-  colsWrap.style.gridTemplateColumns = `repeat(${STRUCT_COLS}, minmax(220px, 1fr))`
+  const list = MANIFEST[key] || []
+  const normList = list.map(p => ({ path:p, norm: normalizeKey(p) }))
 
-  if(!creationKey){
-    // si no trobem la baralla, mostrem un avís dins d’una columna
-    const c = document.createElement("div")
-    c.className = "col"
-    c.innerHTML = `
-      <div class="colTitle">No trobo la baralla “Creació”</div>
-      <div style="font-size:12px;opacity:.7;line-height:1.4">
-        Al manifest no hi ha cap clau que contingui “Creacio/Creació”.<br>
-        Revisa el nom de la carpeta/baralla al manifest.json.
+  const map = {}
+  for(const row of ROWS){
+    const hit = normList.find(o => o.norm.includes(row.key))
+    if(hit) map[row.key] = hit.path
+  }
+
+  const foundCount = Object.keys(map).length
+  if(foundCount === 0){
+    return { _error: `He trobat la baralla "${key}", però no identifico els fitxers per bateria/teclat/veu/baix/guitarra al nom de fitxer.` }
+  }
+  return map
+}
+
+function buildProposal(){
+  const colInput = document.getElementById("colInput")
+  let cols = Number(colInput.value || 5)
+  cols = clamp(cols, 1, 10)
+  colInput.value = cols
+
+  const matrix = document.getElementById("matrix")
+  matrix.innerHTML = ""
+  matrix.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`
+
+  const cardMap = buildCreationCardMap()
+
+  if(cardMap._error){
+    const col = document.createElement("div")
+    col.className = "col"
+    col.innerHTML = `
+      <div class="colHeader">⚠️ Problema amb “Creació”</div>
+      <div style="padding:10px;font-size:12px;opacity:.75;line-height:1.4">
+        ${escapeHtml(cardMap._error)}
       </div>
     `
-    colsWrap.appendChild(c)
+    matrix.appendChild(col)
     return
   }
 
-  // preparem un pool de cartes de creació
-  const pool = [...MANIFEST[creationKey]]
-  shuffle(pool)
-
-  for(let i=0;i<STRUCT_COLS;i++){
-    const nOpts = randInt(MIN_OPTS, MAX_OPTS)
-
+  for(let c=0;c<cols;c++){
     const col = document.createElement("div")
     col.className = "col"
 
-    const title = document.createElement("div")
-    title.className = "colTitle"
-    title.innerHTML = `<span>Columna ${i+1}</span><span style="opacity:.6">${nOpts} opcions</span>`
+    const header = document.createElement("div")
+    header.className = "colHeader"
+    header.textContent = `Proposta ${c+1}`
+    col.appendChild(header)
 
-    const cards = document.createElement("div")
-    cards.className = "colCards"
-
-    for(let j=0;j<nOpts;j++){
-      // si s'acaba el pool, tornem a barrejar
-      if(pool.length === 0){
-        pool.push(...MANIFEST[creationKey])
-        shuffle(pool)
-      }
-
-      const path = pool.pop()
-      const card = document.createElement("div")
-      card.className = "optionCard"
-
-      const img = document.createElement("img")
-      const url = new URL(path, window.location.href)
-      url.searchParams.set("t", Date.now())
-      img.src = url.toString()
-      img.alt = `Opció ${j+1}`
-
-      card.appendChild(img)
-      cards.appendChild(card)
+    // decidim quines files surten (amb mínim 1)
+    let chosen = []
+    for(let r=0;r<ROWS.length;r++){
+      if(Math.random() < PRESENCE_PROB) chosen.push(r)
+    }
+    if(chosen.length === 0){
+      chosen = [Math.floor(Math.random()*ROWS.length)]
     }
 
-    col.appendChild(title)
-    col.appendChild(cards)
-    colsWrap.appendChild(col)
+    for(let r=0;r<ROWS.length;r++){
+      const row = ROWS[r]
+      const cell = document.createElement("div")
+      cell.className = "cell"
+
+      const label = document.createElement("div")
+      label.className = "rowLabel"
+      label.textContent = row.label
+
+      const slot = document.createElement("div")
+      slot.className = "cardSlot"
+
+      const path = cardMap[row.key]
+      const show = chosen.includes(r) && !!path
+
+      if(show){
+        const img = document.createElement("img")
+        const url = new URL(path, window.location.href)
+        url.searchParams.set("t", Date.now())
+        img.src = url.toString()
+        img.alt = row.label
+        slot.appendChild(img)
+      }else{
+        slot.classList.add("empty")
+      }
+
+      cell.appendChild(label)
+      cell.appendChild(slot)
+      col.appendChild(cell)
+    }
+
+    matrix.appendChild(col)
   }
 }
 
-function randInt(min,max){
-  return Math.floor(Math.random()*(max-min+1)) + min
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;")
 }
 
-/* ===== Clear segons mode ===== */
+/* ===== Clear ===== */
 function clearBoard(){
-  if(getMode() === "free"){
+  if(getMode()==="free"){
     document.getElementById("freeCanvas").innerHTML = ""
   }else{
-    document.getElementById("columns").innerHTML = ""
+    // buida només la proposta base, i també l’overlay
+    document.getElementById("matrix").innerHTML = ""
+    document.getElementById("structuredOverlay").innerHTML = ""
   }
 }
 
