@@ -2,125 +2,293 @@
 <html lang="ca">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cartes Rockin</title>
 
 <style>
-:root{
-  --thumb-size:120px;
-}
+  :root{
+    --bg:#f6f7f9;
+    --text:#222;
+    --accent:#ffcc00;
+    --panel:#ffffff;
+    --border:rgba(0,0,0,.18);
+  }
 
-body{
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica;
-  background:#f6f7f9;
-  margin:0;
-  padding:18px;
-}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+    background:var(--bg);
+    color:var(--text);
+    margin:0;
+    padding:16px;
+  }
 
-.layout{
-  display:grid;
-  grid-template-columns:360px 1fr;
-  gap:16px;
-}
+  h1{
+    margin:0 0 10px 0;
+    font-size:24px;
+    font-weight:650;
+    text-align:left;
+  }
 
-/* ===== CARTA GRAN ===== */
+  /* ===== Layout 2 columnes ===== */
+  .layout{
+    display:grid;
+    grid-template-columns: 360px 1fr; /* esquerra fixa, dreta gran */
+    gap:14px;
+    align-items:start;
+  }
 
-.cardStage{
-  height:420px;
-  background:white;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
+  @media (max-width: 980px){
+    .layout{ grid-template-columns: 1fr; }
+  }
 
-.cardStage img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+  /* ===== Panell esquerra ===== */
+  .left{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    padding:12px;
+  }
 
-/* ===== PISSARRA ===== */
+  .controls{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
 
-.boardViewport{
-  height:75vh;
-  overflow:auto;
-  border:2px dashed #ccc;
-  border-radius:14px;
-}
+  select, button{
+    font-size:14px;
+    padding:10px 12px;
+    border-radius:12px;
+  }
 
-.boardCanvas{
-  position:relative;
-  width:2600px;
-  height:1600px;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
-}
+  select{
+    border:1px solid rgba(0,0,0,.18);
+    background:white;
+    flex: 1 1 160px;
+  }
 
-/* MINI-CARTES DINÀMIQUES */
+  button{
+    background:var(--accent);
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+  }
 
-.thumb{
-  position:absolute;
-  width:var(--thumb-size);
-  aspect-ratio:2/3;
-  cursor:grab;
-}
+  .subcontrols{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin: 4px 0 10px 0;
+  }
 
-.thumb img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  pointer-events:none;
-}
+  .rangeRow{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex:1 1 240px;
+  }
 
-.thumb:active{
-  transform:scale(1.05);
-}
+  .rangeRow label{
+    font-size:12px;
+    opacity:.75;
+    white-space:nowrap;
+  }
 
-.rotate90{
-  transform:rotate(90deg);
-}
+  input[type="range"]{
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .hint{
+    font-size:12px;
+    opacity:.65;
+    margin: 10px 0 0 0;
+    line-height:1.35;
+  }
+
+  /* ===== Carta gran (rebot) ===== */
+  .cardStage{
+    width:100%;
+    height: 420px;
+    border-radius:16px;
+    overflow:hidden;
+    background:white;
+    border:1px solid rgba(0,0,0,.10);
+    box-shadow:0 10px 24px rgba(0,0,0,.10);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  .cardStage.animate{
+    animation: deal .38s cubic-bezier(.2,.9,.2,1);
+  }
+
+  @keyframes deal{
+    0%{ transform:translateY(0); }
+    35%{ transform:translateY(-10px); }
+    70%{ transform:translateY(4px); }
+    100%{ transform:translateY(0); }
+  }
+
+  .cardImg{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:white;
+    user-select:none;
+  }
+
+  /* ===== Pissarra dreta ===== */
+  .right{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .boardWrap{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    padding:12px;
+  }
+
+  /* Contenidor amb scroll en 2 direccions */
+  .boardViewport{
+    width:100%;
+    height: 76vh;
+    min-height: 520px;
+    overflow:auto;
+    border:2px dashed rgba(0,0,0,.20);
+    border-radius:14px;
+    background:white;
+    position:relative;
+  }
+
+  /* Zoom general (escala el canvas sencer) */
+  .boardCanvas{
+    position:relative;
+    width: 2600px;
+    height: 1600px;
+    transform-origin: 0 0;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
+  }
+
+  /* mini-carta: posició absoluta + mida per-element (via CSS var) */
+  .thumb{
+    position:absolute;
+    --w: 150px;               /* mida inicial per mini-carta (editable per carta) */
+    width: var(--w);
+    height: auto;
+
+    border:none;
+    background:transparent;
+    box-shadow:none;
+
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+  }
+
+  .thumb:active{
+    cursor:grabbing;
+  }
+
+  /* la imatge NO es retalla i respecta horitzontal/vertical */
+  .thumb img{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    pointer-events:none;
+    background:transparent;
+    display:block;
+  }
+
+  /* Handle de redimensionar */
+  .handle{
+    position:absolute;
+    right:-6px;
+    bottom:-6px;
+    width:14px;
+    height:14px;
+    border-radius:999px;
+    background: rgba(0,0,0,.45);
+    border: 2px solid rgba(255,255,255,.85);
+    cursor: nwse-resize;
+    touch-action:none;
+  }
+
+  /* petit feedback en hover */
+  .thumb:hover .handle{
+    background: rgba(0,0,0,.60);
+  }
+
+  .muted{
+    font-size:12px;
+    opacity:.65;
+    margin-top:8px;
+    padding:0 2px;
+  }
 </style>
 </head>
 
 <body>
 
+<h1>Cartes Rockin</h1>
+
 <div class="layout">
 
-<div>
-<select id="deck"></select>
-<button onclick="novaCarta()">Nova carta</button>
+  <!-- ESQUERRA: Random + Controls -->
+  <div class="left">
+    <div class="controls">
+      <select id="deck"></select>
+      <button id="btnNew" type="button">Nova carta</button>
+      <button id="btnClear" type="button">Neteja pissarra</button>
+    </div>
 
-<div class="cardStage">
-  <img id="imgTop" draggable="true">
-</div>
-</div>
+    <div class="subcontrols">
+      <div class="rangeRow">
+        <label for="zoomSlider"><b>Zoom pissarra</b></label>
+        <input type="range" id="zoomSlider" min="50" max="140" value="100">
+      </div>
+      <div style="font-size:12px;opacity:.7;" id="zoomLabel">100%</div>
+    </div>
 
-<div>
+    <div class="cardStage" id="cardStage">
+      <img id="imgTop" class="cardImg" draggable="true" alt="Carta actual">
+    </div>
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-  <strong>Pissarra</strong>
+    <p class="hint">
+      <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra (dreta) ·
+      A la pissarra: <b>arrossega per moure</b> · <b>boleta</b> per canviar la mida · <b>doble clic</b> per eliminar.
+    </p>
+  </div>
 
-  <label style="font-size:13px">
-    Mida cartes
-    <input type="range" id="sizeSlider" min="70" max="220" value="120">
-  </label>
-</div>
-
-<div class="boardViewport">
-  <div id="boardCanvas" class="boardCanvas"></div>
-</div>
-
-</div>
+  <!-- DRETA: Pissarra gran -->
+  <div class="right">
+    <div class="boardWrap">
+      <div class="boardViewport" id="boardViewport">
+        <div class="boardCanvas" id="boardCanvas"></div>
+      </div>
+      <div class="muted">Scroll vertical i horitzontal per moure’t per la pissarra gran.</div>
+    </div>
+  </div>
 
 </div>
 
 <script>
-let MANIFEST={}
-let barallaActual=[]
-let barallaRestant=[]
-let currentPath=null
-let rotate=false
+let MANIFEST = {}
+let barallaActual = []
+let barallaRestant = []
+let currentPath = null
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -131,94 +299,232 @@ function shuffle(a){
 }
 
 async function init(){
-  MANIFEST=await (await fetch("manifest.json")).json()
+  const res = await fetch("manifest.json")
+  MANIFEST = await res.json()
 
-  const select=document.getElementById("deck")
+  const select = document.getElementById("deck")
   Object.keys(MANIFEST).forEach(b=>{
-    const o=document.createElement("option")
-    o.value=b
-    o.textContent=b
-    select.appendChild(o)
+    const opt = document.createElement("option")
+    opt.value = b
+    opt.textContent = b
+    select.appendChild(opt)
   })
 
-  select.onchange=carregarBaralla
+  select.addEventListener("change", carregarBaralla)
 
-  document.getElementById("sizeSlider").oninput=(e)=>{
-    document.documentElement.style.setProperty("--thumb-size", e.target.value+"px")
-  }
+  document.getElementById("btnNew").addEventListener("click", novaCarta)
+  document.getElementById("btnClear").addEventListener("click", ()=>{
+    document.getElementById("boardCanvas").innerHTML = ""
+  })
 
-  const img=document.getElementById("imgTop")
-  img.ondragstart=e=>{
-    e.dataTransfer.setData("text/plain",currentPath)
-    e.dataTransfer.setData("rotate",rotate?1:0)
-  }
+  document.addEventListener("keydown", e=>{
+    if(e.key === "Enter") novaCarta()
+  })
 
-  const canvas=document.getElementById("boardCanvas")
+  // Zoom general de la pissarra (control a l'esquerra)
+  const zoomSlider = document.getElementById("zoomSlider")
+  const zoomLabel  = document.getElementById("zoomLabel")
+  zoomSlider.addEventListener("input", ()=>{
+    const z = Number(zoomSlider.value) / 100
+    document.getElementById("boardCanvas").style.transform = `scale(${z})`
+    zoomLabel.textContent = `${zoomSlider.value}%`
+  })
 
-  canvas.ondragover=e=>e.preventDefault()
+  // Drag des de la carta gran cap a la pissarra
+  const imgTop = document.getElementById("imgTop")
+  imgTop.addEventListener("dragstart", (e)=>{
+    if(!currentPath) return
+    e.dataTransfer.setData("text/plain", currentPath)
+    e.dataTransfer.effectAllowed = "copy"
+  })
 
-  canvas.ondrop=e=>{
+  // Drop al canvas (interior), calculant coordenades amb el zoom
+  const canvas = document.getElementById("boardCanvas")
+  canvas.addEventListener("dragover", e => e.preventDefault())
+
+  canvas.addEventListener("drop", e=>{
     e.preventDefault()
-    const path=e.dataTransfer.getData("text/plain")
-    const rot=e.dataTransfer.getData("rotate")==="1"
+    const path = e.dataTransfer.getData("text/plain")
+    if(!path) return
 
-    const rect=canvas.getBoundingClientRect()
+    const scale = getCanvasScale()
+    const rect = canvas.getBoundingClientRect()
 
-    addThumb(path,e.clientX-rect.left,e.clientY-rect.top,rot)
-  }
+    // coordenades dins canvas "desescalades"
+    const x = (e.clientX - rect.left) / scale
+    const y = (e.clientY - rect.top) / scale
 
+    addThumb(path, x, y)
+  })
+
+  // Carrega inicial
   carregarBaralla()
+  // aplica zoom inicial 100%
+  zoomSlider.dispatchEvent(new Event("input"))
+}
+
+function getCanvasScale(){
+  // si no hi ha transform, escala=1
+  const t = document.getElementById("boardCanvas").style.transform
+  const m = t.match(/scale\(([\d.]+)\)/)
+  return m ? Number(m[1]) : 1
 }
 
 function carregarBaralla(){
-  const deck=document.getElementById("deck").value
-  rotate=deck.toLowerCase().includes("bateria")
-
-  barallaActual=[...MANIFEST[deck]]
-  barallaRestant=shuffle([...barallaActual])
+  const deck = document.getElementById("deck").value
+  barallaActual = [...MANIFEST[deck]]
+  barallaRestant = shuffle([...barallaActual])
   novaCarta()
 }
 
-function novaCarta(){
-  if(barallaRestant.length===0) barallaRestant=shuffle([...barallaActual])
-
-  currentPath=barallaRestant.pop()
-
-  const url=new URL(currentPath,location.href)
-  document.getElementById("imgTop").src=url
-  document.getElementById("imgTop").classList.toggle("rotate90",rotate)
+function setMainImg(path){
+  const img = document.getElementById("imgTop")
+  const url = new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  img.src = url.toString()
 }
 
-function addThumb(path,x,y,rot){
-  const t=document.createElement("div")
-  t.className="thumb"
+function novaCarta(){
+  if(barallaRestant.length === 0){
+    barallaRestant = shuffle([...barallaActual])
+  }
 
-  const img=document.createElement("img")
-  img.src=path
-  if(rot) img.classList.add("rotate90")
+  const path = barallaRestant.pop()
+  currentPath = path
+  setMainImg(path)
+
+  // animació rebot
+  const stage = document.getElementById("cardStage")
+  stage.classList.remove("animate")
+  void stage.offsetWidth
+  stage.classList.add("animate")
+}
+
+// --- Mini-carta: moure + redimensionar per element ---
+function addThumb(path, x, y){
+  const canvas = document.getElementById("boardCanvas")
+
+  const t = document.createElement("div")
+  t.className = "thumb"
+  t.style.setProperty("--w", "150px") // mida inicial
+
+  const img = document.createElement("img")
+  const url = new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  img.src = url.toString()
+
+  const handle = document.createElement("div")
+  handle.className = "handle"
+  handle.title = "Arrossega per canviar la mida"
 
   t.appendChild(img)
+  t.appendChild(handle)
 
-  t.style.left=x+"px"
-  t.style.top=y+"px"
+  // centrat aproximat (mida inicial ~150px, alçada variable segons proporció)
+  t.style.left = (x - 75) + "px"
+  t.style.top  = (y - 90) + "px"
 
-  makeDrag(t)
+  // eliminar amb doble clic
+  t.addEventListener("dblclick", ()=> t.remove())
 
-  document.getElementById("boardCanvas").appendChild(t)
+  makeMovable(t, canvas)
+  makeResizable(t, handle)
+
+  canvas.appendChild(t)
 }
 
-function makeDrag(el){
-  let sx,sy,ox,oy
-  el.onpointerdown=e=>{
+function makeMovable(el, canvas){
+  let startX=0, startY=0, origL=0, origT=0
+  let dragging = false
+
+  el.addEventListener("pointerdown", (e)=>{
+    // si cliques el handle, NO mou (ho gestiona resize)
+    if(e.target && e.target.classList.contains("handle")) return
+
+    dragging = true
     el.setPointerCapture(e.pointerId)
-    sx=e.clientX; sy=e.clientY
-    ox=parseFloat(el.style.left); oy=parseFloat(el.style.top)
-  }
-  el.onpointermove=e=>{
-    if(e.buttons!==1) return
-    el.style.left=(ox+e.clientX-sx)+"px"
-    el.style.top=(oy+e.clientY-sy)+"px"
-  }
+    el.style.zIndex = String(Date.now())
+
+    const scale = getCanvasScale()
+    startX = e.clientX
+    startY = e.clientY
+    origL = parseFloat(el.style.left || "0")
+    origT = parseFloat(el.style.top  || "0")
+
+    el.dataset._scale = String(scale)
+  })
+
+  el.addEventListener("pointermove", (e)=>{
+    if(!dragging) return
+
+    const scale = Number(el.dataset._scale || "1")
+    const dx = (e.clientX - startX) / scale
+    const dy = (e.clientY - startY) / scale
+
+    // clamp dins canvas
+    const canvasW = canvas.clientWidth
+    const canvasH = canvas.clientHeight
+
+    // mida actual de l’element (en coords canvas; no depèn del zoom)
+    const w = el.getBoundingClientRect().width / getCanvasScale()
+    const h = el.getBoundingClientRect().height / getCanvasScale()
+
+    let newL = origL + dx
+    let newT = origT + dy
+
+    newL = clamp(newL, 0, canvasW - w)
+    newT = clamp(newT, 0, canvasH - h)
+
+    el.style.left = newL + "px"
+    el.style.top  = newT + "px"
+  })
+
+  el.addEventListener("pointerup", (e)=>{
+    dragging = false
+    try{ el.releasePointerCapture(e.pointerId) }catch(_){}
+  })
+
+  el.addEventListener("pointercancel", ()=> dragging=false)
+}
+
+function makeResizable(el, handle){
+  let startX=0, startW=150
+  let resizing = false
+
+  handle.addEventListener("pointerdown", (e)=>{
+    resizing = true
+    handle.setPointerCapture(e.pointerId)
+    el.style.zIndex = String(Date.now())
+
+    const scale = getCanvasScale()
+    startX = e.clientX
+    startW = parseFloat(getComputedStyle(el).getPropertyValue("--w")) || 150
+
+    handle.dataset._scale = String(scale)
+    e.preventDefault()
+    e.stopPropagation()
+  })
+
+  handle.addEventListener("pointermove", (e)=>{
+    if(!resizing) return
+    const scale = Number(handle.dataset._scale || "1")
+    const dx = (e.clientX - startX) / scale
+
+    // nova amplada (clamp)
+    const newW = clamp(startW + dx, 60, 420)
+    el.style.setProperty("--w", newW + "px")
+  })
+
+  handle.addEventListener("pointerup", (e)=>{
+    resizing = false
+    try{ handle.releasePointerCapture(e.pointerId) }catch(_){}
+  })
+
+  handle.addEventListener("pointercancel", ()=> resizing=false)
+}
+
+function clamp(v,min,max){
+  return Math.max(min, Math.min(max, v))
 }
 
 init()
