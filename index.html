@@ -5,197 +5,114 @@
 <title>Cartes Rockin</title>
 
 <style>
+:root{
+  --thumb-size:120px;
+}
+
 body{
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica;
   background:#f6f7f9;
-  color:#222;
-  text-align:center;
   margin:0;
-  padding:26px;
+  padding:18px;
 }
 
-h1{
-  margin:0 0 14px 0;
-  font-size:30px;
-  font-weight:650;
+.layout{
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:16px;
 }
 
-.controls{
-  margin-bottom:14px;
-}
+/* ===== CARTA GRAN ===== */
 
-select, button{
-  font-size:16px;
-  padding:10px 14px;
-  border-radius:12px;
-  margin:6px;
-}
-
-select{
-  border:1px solid #cfcfcf;
+.cardStage{
+  height:420px;
   background:white;
-}
-
-button{
-  background:#ffcc00;
-  border:none;
-  font-weight:700;
-  cursor:pointer;
-}
-
-/* =================================================
-   CARTA GRAN (rebot)
-================================================= */
-
-.stage{
-  width:min(92vw, 980px);
-  margin:auto;
-}
-
-.deck{
-  position:relative;
-  width:100%;
-  height:min(60vh, 600px);
+  border-radius:16px;
   display:flex;
   align-items:center;
   justify-content:center;
-}
-
-.card{
-  position:absolute;
-  width:100%;
-  height:100%;
-  border-radius:18px;
   overflow:hidden;
-  background:white;
-  box-shadow:0 10px 30px rgba(0,0,0,.18);
 }
 
-.card img{
+.cardStage img{
   width:100%;
   height:100%;
   object-fit:contain;
 }
 
-.card.back2{
-  transform: translateY(16px) scale(.97) rotate(-1deg);
-  opacity:.6;
+/* ===== PISSARRA ===== */
+
+.boardViewport{
+  height:75vh;
+  overflow:auto;
+  border:2px dashed #ccc;
+  border-radius:14px;
 }
 
-.card.back1{
-  transform: translateY(9px) scale(.985) rotate(.8deg);
-  opacity:.78;
-}
-
-.card.top.animate{
-  animation: deal .42s cubic-bezier(.2,.9,.2,1);
-}
-
-@keyframes deal{
-  0%{transform:translateY(0)}
-  35%{transform:translateY(-10px)}
-  70%{transform:translateY(4px)}
-  100%{transform:translateY(0)}
-}
-
-.hint{
-  margin:12px 0 18px;
-  font-size:13px;
-  opacity:.65;
-}
-
-/* =================================================
-   PISSARRA
-================================================= */
-
-.board-wrap{
-  width:min(92vw,1100px);
-  margin:auto;
-  text-align:left;
-}
-
-.board-head{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-
-.board{
+.boardCanvas{
   position:relative;
-  width:100%;
-  min-height:700px; /* 5+ files */
-  background:white;
-  border:2px dashed rgba(0,0,0,.2);
-  border-radius:16px;
-  overflow:hidden;
+  width:2600px;
+  height:1600px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(0,0,0,.05) 1px, transparent 0) 0 0/24px 24px;
 }
 
-/* MINI-CARTES – més petites i proporció real */
+/* MINI-CARTES DINÀMIQUES */
 
 .thumb{
   position:absolute;
-
-  width:120px;   /* ← més petit */
-  height:auto;
-
-  border:none;
-  background:transparent;
-  box-shadow:none;
-
+  width:var(--thumb-size);
+  aspect-ratio:2/3;
   cursor:grab;
-  user-select:none;
-  touch-action:none;
-}
-
-.thumb:active{
-  cursor:grabbing;
-  transform:scale(1.05);
 }
 
 .thumb img{
   width:100%;
-  height:auto;
+  height:100%;
   object-fit:contain;
   pointer-events:none;
 }
 
-.muted{
-  font-size:13px;
-  opacity:.6;
-  margin-top:8px;
+.thumb:active{
+  transform:scale(1.05);
+}
+
+.rotate90{
+  transform:rotate(90deg);
 }
 </style>
 </head>
 
 <body>
 
-<h1>Cartes Rockin</h1>
+<div class="layout">
 
-<div class="controls">
-  <select id="deck"></select>
-  <button onclick="novaCarta()">Nova carta</button>
+<div>
+<select id="deck"></select>
+<button onclick="novaCarta()">Nova carta</button>
+
+<div class="cardStage">
+  <img id="imgTop" draggable="true">
+</div>
 </div>
 
-<div class="stage">
-  <div class="deck">
-    <div class="card back2"><img id="imgBack2"></div>
-    <div class="card back1"><img id="imgBack1"></div>
-    <div class="card top" id="topCard"><img id="imgTop" draggable="true"></div>
-  </div>
+<div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+  <strong>Pissarra</strong>
+
+  <label style="font-size:13px">
+    Mida cartes
+    <input type="range" id="sizeSlider" min="70" max="220" value="120">
+  </label>
 </div>
 
-<div class="hint">
-Enter = nova carta · arrossega cap a la pissarra · mou-les lliurement · doble clic per eliminar
+<div class="boardViewport">
+  <div id="boardCanvas" class="boardCanvas"></div>
 </div>
 
-<div class="board-wrap">
-  <div class="board-head">
-    <strong>Pissarra</strong>
-    <button id="clearBoard">Neteja pissarra</button>
-  </div>
+</div>
 
-  <div id="board" class="board"></div>
-  <div class="muted">Col·loca les cartes on vulguis, com en una pissarra real.</div>
 </div>
 
 <script>
@@ -203,6 +120,7 @@ let MANIFEST={}
 let barallaActual=[]
 let barallaRestant=[]
 let currentPath=null
+let rotate=false
 
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -213,11 +131,9 @@ function shuffle(a){
 }
 
 async function init(){
-  const res=await fetch("manifest.json")
-  MANIFEST=await res.json()
+  MANIFEST=await (await fetch("manifest.json")).json()
 
   const select=document.getElementById("deck")
-
   Object.keys(MANIFEST).forEach(b=>{
     const o=document.createElement("option")
     o.value=b
@@ -226,44 +142,38 @@ async function init(){
   })
 
   select.onchange=carregarBaralla
-  document.addEventListener("keydown",e=>{ if(e.key==="Enter") novaCarta() })
 
-  const imgTop=document.getElementById("imgTop")
-  imgTop.addEventListener("dragstart",e=>{
-    if(!currentPath) return
+  document.getElementById("sizeSlider").oninput=(e)=>{
+    document.documentElement.style.setProperty("--thumb-size", e.target.value+"px")
+  }
+
+  const img=document.getElementById("imgTop")
+  img.ondragstart=e=>{
     e.dataTransfer.setData("text/plain",currentPath)
-  })
+    e.dataTransfer.setData("rotate",rotate?1:0)
+  }
 
-  const board=document.getElementById("board")
+  const canvas=document.getElementById("boardCanvas")
 
-  board.addEventListener("dragover",e=>e.preventDefault())
+  canvas.ondragover=e=>e.preventDefault()
 
-  board.addEventListener("drop",e=>{
+  canvas.ondrop=e=>{
     e.preventDefault()
-
     const path=e.dataTransfer.getData("text/plain")
-    if(!path) return
+    const rot=e.dataTransfer.getData("rotate")==="1"
 
-    const rect=board.getBoundingClientRect()
+    const rect=canvas.getBoundingClientRect()
 
-    addThumb(path, e.clientX-rect.left, e.clientY-rect.top)
-  })
-
-  document.getElementById("clearBoard").onclick=()=>board.innerHTML=""
+    addThumb(path,e.clientX-rect.left,e.clientY-rect.top,rot)
+  }
 
   carregarBaralla()
 }
 
-function setImg(id,path){
-  const img=document.getElementById(id)
-  if(!path){ img.removeAttribute("src"); return }
-  const url=new URL(path,window.location.href)
-  url.searchParams.set("t",Date.now())
-  img.src=url.toString()
-}
-
 function carregarBaralla(){
   const deck=document.getElementById("deck").value
+  rotate=deck.toLowerCase().includes("bateria")
+
   barallaActual=[...MANIFEST[deck]]
   barallaRestant=shuffle([...barallaActual])
   novaCarta()
@@ -272,56 +182,42 @@ function carregarBaralla(){
 function novaCarta(){
   if(barallaRestant.length===0) barallaRestant=shuffle([...barallaActual])
 
-  const path=barallaRestant.pop()
-  currentPath=path
+  currentPath=barallaRestant.pop()
 
-  setImg("imgTop",path)
-
-  const top=document.getElementById("topCard")
-  top.classList.remove("animate")
-  void top.offsetWidth
-  top.classList.add("animate")
+  const url=new URL(currentPath,location.href)
+  document.getElementById("imgTop").src=url
+  document.getElementById("imgTop").classList.toggle("rotate90",rotate)
 }
 
-function addThumb(path,x,y){
-  const board=document.getElementById("board")
-
+function addThumb(path,x,y,rot){
   const t=document.createElement("div")
   t.className="thumb"
 
   const img=document.createElement("img")
-  const url=new URL(path,window.location.href)
-  url.searchParams.set("t",Date.now())
-  img.src=url.toString()
+  img.src=path
+  if(rot) img.classList.add("rotate90")
 
   t.appendChild(img)
 
-  /* centrat segons nova mida (120px aprox) */
-  t.style.left=(x-60)+"px"
-  t.style.top=(y-45)+"px"
+  t.style.left=x+"px"
+  t.style.top=y+"px"
 
-  t.ondblclick=()=>t.remove()
+  makeDrag(t)
 
-  makeDraggable(t)
-
-  board.appendChild(t)
+  document.getElementById("boardCanvas").appendChild(t)
 }
 
-function makeDraggable(el){
-  let startX,startY,origX,origY
-
+function makeDrag(el){
+  let sx,sy,ox,oy
   el.onpointerdown=e=>{
     el.setPointerCapture(e.pointerId)
-    startX=e.clientX
-    startY=e.clientY
-    origX=parseFloat(el.style.left)
-    origY=parseFloat(el.style.top)
+    sx=e.clientX; sy=e.clientY
+    ox=parseFloat(el.style.left); oy=parseFloat(el.style.top)
   }
-
   el.onpointermove=e=>{
     if(e.buttons!==1) return
-    el.style.left=(origX+e.clientX-startX)+"px"
-    el.style.top=(origY+e.clientY-startY)+"px"
+    el.style.left=(ox+e.clientX-sx)+"px"
+    el.style.top=(oy+e.clientY-sy)+"px"
   }
 }
 
