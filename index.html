@@ -13,9 +13,9 @@
     --panel:#ffffff;
     --border:rgba(0,0,0,.18);
 
-    /* ESTRUCTURADA: mida compacta perquè càpiga tot sense scroll */
-    --struct-card-h: 64px;     /* alçada del slot de carta (baixa-ho si cal) */
-    --struct-gap: 6px;         /* espais dins la graella */
+    /* ESTRUCTURADA */
+    --struct-card-h: 78px;
+    --struct-gap: 6px;
   }
 
   body{
@@ -194,13 +194,7 @@
     position:relative;
   }
 
-  .muted{
-    font-size:12px;
-    opacity:.65;
-    margin-top:8px;
-  }
-
-  /* ===== FREE MODE CANVAS ===== */
+  /* ===== FREE MODE ===== */
   .freeCanvas{
     position:relative;
     width: 2600px;
@@ -210,7 +204,21 @@
       radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
   }
 
-  /* ===== Thumb (overlay draggable) ===== */
+  /* capa base (creació) i overlay (altres) */
+  .freeBase{
+    position:absolute;
+    inset:0;
+    z-index: 1;      /* sempre al fons */
+    pointer-events:none; /* base no s’arrossega */
+  }
+  .freeOverlay{
+    position:absolute;
+    inset:0;
+    z-index: 5;      /* sempre per sobre */
+    pointer-events:auto;
+  }
+
+  /* ===== Overlay thumbs ===== */
   .thumb{
     position:absolute;
     --w: 150px;
@@ -257,7 +265,7 @@
     pointer-events:auto;
   }
 
-  /* ===== STRUCTURED MODE (no scroll intended) ===== */
+  /* ===== STRUCTURED MODE ===== */
   .structuredWrap{
     transform-origin: 0 0;
     width: 100%;
@@ -301,7 +309,6 @@
     font-size:13px;
   }
 
-  /* la graella que ha de cabre */
   .matrix{
     display:grid;
     gap: var(--struct-gap);
@@ -310,42 +317,17 @@
   }
 
   .col{
-    border:1px solid rgba(0,0,0,.10);
+    border:1px solid rgba(0,0,0,.08);
     border-radius:12px;
-    background: rgba(255,255,255,.92);
+    background: rgba(255,255,255,.95);
     overflow:hidden;
-    display:flex;
-    flex-direction:column;
+    display:grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: var(--struct-gap);
+    padding: var(--struct-gap);
     min-width:0;
   }
 
-  .colHeader{
-    font-weight:650;
-    font-size:11px;
-    padding:6px 8px;
-    border-bottom:1px solid rgba(0,0,0,.06);
-    opacity:.85;
-    background: rgba(0,0,0,.02);
-  }
-
-  .cell{
-    border-bottom:1px dashed rgba(0,0,0,.08);
-    padding:6px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-  }
-  .cell:last-child{ border-bottom:none; }
-
-  .rowLabel{
-    font-size:10px;
-    opacity:.6;
-    text-transform:uppercase;
-    letter-spacing:.02em;
-    line-height:1;
-  }
-
-  /* slot ultra compacte */
   .cardSlot{
     width:100%;
     height: var(--struct-card-h);
@@ -368,18 +350,16 @@
     display:block;
   }
 
-  /* capa base i overlay dins estructurada */
   .structuredBase{
     position:relative;
-    z-index: 1; /* sempre a sota */
+    z-index: 1;
   }
   .structuredOverlay{
     position:absolute;
     inset: 0;
-    z-index: 5; /* sempre a sobre */
-    pointer-events:none; /* IMPORTANT: deixem que la base encara sigui usable */
+    z-index: 5;
+    pointer-events:none;
   }
-  /* però les thumbs de l’overlay han de rebre events */
   .structuredOverlay .thumb{
     pointer-events:auto;
   }
@@ -408,7 +388,7 @@
 
     <p class="hint">
       <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra.
-      A estructurada, la carta cau com a <b>overlay</b> per sobre de les cartes de creació.
+      En lliure: la base (creació) queda sempre a sota.
     </p>
   </div>
 
@@ -437,7 +417,10 @@
     <div class="boardViewport" id="boardViewport">
 
       <!-- FREE -->
-      <div class="freeCanvas" id="freeCanvas"></div>
+      <div class="freeCanvas" id="freeCanvas">
+        <div class="freeBase" id="freeBase"></div>
+        <div class="freeOverlay" id="freeOverlay"></div>
+      </div>
 
       <!-- STRUCTURED -->
       <div class="structuredWrap hidden" id="structuredWrap">
@@ -449,23 +432,14 @@
 
           <button class="miniBtn" id="btnProposal" type="button">Fes proposta aleatòria</button>
 
-          <span style="font-size:12px;opacity:.65;">
-            (mínim 1 carta per columna)
-          </span>
+          <span style="font-size:12px;opacity:.65;">(mínim 1 carta per columna)</span>
         </div>
 
-        <!-- BASE (creació) -->
         <div class="structuredBase">
           <div class="matrix" id="matrix"></div>
         </div>
 
-        <!-- OVERLAY (altres cartes a sobre) -->
         <div class="structuredOverlay" id="structuredOverlay"></div>
-
-        <div class="muted">
-          Les cartes de creació queden a sota; qualsevol carta que arrosseguis queda a sobre.
-          Doble clic a una carta overlay per eliminar-la.
-        </div>
       </div>
 
     </div>
@@ -476,15 +450,7 @@
 
 <script>
 /* ===== Config estructurada ===== */
-const ROWS = [
-  { key:"bateria",  label:"Bateria"  },
-  { key:"teclat",   label:"Teclat"   },
-  { key:"veu",      label:"Veu"      },
-  { key:"baix",     label:"Baix"     },
-  { key:"guitarra", label:"Guitarra" }
-]
-
-// probabilitat base (per fila) però assegurarem mínim 1 per columna
+const ROWS = ["bateria","teclat","veu","baix","guitarra"]
 const PRESENCE_PROB = 0.55
 
 /* ===== Estat ===== */
@@ -521,7 +487,6 @@ function getMode(){
 async function init(){
   MANIFEST = await (await fetch("manifest.json")).json()
 
-  // deck selector
   const select = document.getElementById("deck")
   Object.keys(MANIFEST).forEach(b=>{
     const opt=document.createElement("option")
@@ -539,15 +504,13 @@ async function init(){
     if(e.key==="Enter") novaCarta()
   })
 
-  // zoom
   document.getElementById("zoomIn").addEventListener("click", ()=> setZoom(zoom + ZOOM_STEP))
   document.getElementById("zoomOut").addEventListener("click", ()=> setZoom(zoom - ZOOM_STEP))
   updateZoomUI()
 
-  // structured proposal
   document.getElementById("btnProposal").addEventListener("click", buildProposal)
 
-  // drag from main -> depending on mode
+  // drag from main card
   const imgTop = document.getElementById("imgTop")
   imgTop.addEventListener("dragstart", (e)=>{
     if(!currentPath) return
@@ -555,42 +518,36 @@ async function init(){
     e.dataTransfer.effectAllowed="copy"
   })
 
-  // drop targets
-  const freeCanvas = document.getElementById("freeCanvas")
-  freeCanvas.addEventListener("dragover", e=>e.preventDefault())
-  freeCanvas.addEventListener("drop", e=>{
+  // drop in free overlay (SEMPRE a sobre de base)
+  const freeOverlay = document.getElementById("freeOverlay")
+  freeOverlay.addEventListener("dragover", e=>e.preventDefault())
+  freeOverlay.addEventListener("drop", e=>{
     e.preventDefault()
     if(getMode()!=="free") return
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
+
+    const freeCanvas = document.getElementById("freeCanvas")
     const rect = freeCanvas.getBoundingClientRect()
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
-    addThumbToFree(path, x, y)
+    addThumbToContainer(freeOverlay, path, x, y, "150px")
   })
 
-  const overlay = document.getElementById("structuredOverlay")
-  overlay.addEventListener("dragover", e=>e.preventDefault())
-  overlay.addEventListener("drop", e=>{
+  // drop in structured overlay
+  const structuredOverlay = document.getElementById("structuredOverlay")
+  structuredOverlay.addEventListener("dragover", e=>e.preventDefault())
+  structuredOverlay.addEventListener("drop", e=>{
     e.preventDefault()
     if(getMode()!=="structured") return
     const path = e.dataTransfer.getData("text/plain")
     if(!path) return
 
-    // coordenades relatives al structuredWrap (no al viewport)
     const wrap = document.getElementById("structuredWrap")
     const rect = wrap.getBoundingClientRect()
     const x = (e.clientX - rect.left) / zoom
     const y = (e.clientY - rect.top) / zoom
-
-    addThumbToStructuredOverlay(path, x, y)
-  })
-
-  // input columnes: reconstruïm proposta quan canviï (opcional)
-  document.getElementById("colInput").addEventListener("change", ()=>{
-    // no fem proposta automàtica; només preparem i deixem el botó
-    // però si vols que regeneri al canvi, descomenta:
-    // buildProposal()
+    addThumbToContainer(structuredOverlay, path, x, y, "140px")
   })
 
   carregarBaralla()
@@ -658,35 +615,11 @@ function novaCarta(){
   stage.classList.add("animate")
 }
 
-/* ===== Free board thumbs ===== */
-function addThumbToFree(path, x, y){
-  const canvas=document.getElementById("freeCanvas")
-  const t = createThumb(path)
-  t.style.left=(x-75)+"px"
-  t.style.top=(y-90)+"px"
-  makeMovable(t, canvas, () => zoom)
-  canvas.appendChild(t)
-}
-
-/* ===== Structured overlay thumbs ===== */
-function addThumbToStructuredOverlay(path, x, y){
-  const overlay=document.getElementById("structuredOverlay")
-  const t = createThumb(path)
-
-  // una mica més petita per defecte, perquè no tapi massa
-  t.style.setProperty("--w","140px")
-
-  t.style.left=(x-70)+"px"
-  t.style.top=(y-80)+"px"
-
-  makeMovable(t, overlay, () => zoom)
-  overlay.appendChild(t)
-}
-
-function createThumb(path){
+/* ===== Thumb helpers ===== */
+function createThumb(path, widthCss){
   const t=document.createElement("div")
   t.className="thumb"
-  t.style.setProperty("--w","150px")
+  t.style.setProperty("--w", widthCss || "150px")
 
   const img=document.createElement("img")
   const url=new URL(path, window.location.href)
@@ -700,14 +633,22 @@ function createThumb(path){
   t.appendChild(img)
   t.appendChild(handle)
 
-  // eliminar
   t.addEventListener("dblclick", ()=>t.remove())
 
-  makeResizable(t, handle, () => zoom)
+  makeMovable(t)
+  makeResizable(t, handle)
   return t
 }
 
-function makeMovable(el, container, getZoom){
+function addThumbToContainer(container, path, x, y, widthCss){
+  const t = createThumb(path, widthCss)
+  const w = parseFloat(widthCss) || 150
+  t.style.left = (x - (w/2)) + "px"
+  t.style.top  = (y - (w/2)) + "px"
+  container.appendChild(t)
+}
+
+function makeMovable(el){
   let startX=0,startY=0,origL=0,origT=0,dragging=false
 
   el.addEventListener("pointerdown",(e)=>{
@@ -716,7 +657,6 @@ function makeMovable(el, container, getZoom){
     el.classList.add("is-active")
     el.setPointerCapture(e.pointerId)
     el.style.zIndex=String(Date.now())
-
     startX=e.clientX; startY=e.clientY
     origL=parseFloat(el.style.left||"0")
     origT=parseFloat(el.style.top||"0")
@@ -724,24 +664,10 @@ function makeMovable(el, container, getZoom){
 
   el.addEventListener("pointermove",(e)=>{
     if(!dragging) return
-    const z = getZoom()
-    const dx=(e.clientX-startX)/z
-    const dy=(e.clientY-startY)/z
-
-    const containerW = container.clientWidth
-    const containerH = container.clientHeight
-
-    const w = el.getBoundingClientRect().width / z
-    const h = el.getBoundingClientRect().height / z
-
-    let newL=origL+dx
-    let newT=origT+dy
-
-    newL=clamp(newL,0,containerW-w)
-    newT=clamp(newT,0,containerH-h)
-
-    el.style.left=newL+"px"
-    el.style.top=newT+"px"
+    const dx=(e.clientX-startX)/zoom
+    const dy=(e.clientY-startY)/zoom
+    el.style.left=(origL+dx)+"px"
+    el.style.top=(origT+dy)+"px"
   })
 
   el.addEventListener("pointerup",(e)=>{
@@ -755,7 +681,7 @@ function makeMovable(el, container, getZoom){
   })
 }
 
-function makeResizable(el, handle, getZoom){
+function makeResizable(el, handle){
   let startX=0,startW=150,resizing=false
 
   handle.addEventListener("pointerdown",(e)=>{
@@ -770,8 +696,7 @@ function makeResizable(el, handle, getZoom){
 
   handle.addEventListener("pointermove",(e)=>{
     if(!resizing) return
-    const z = getZoom()
-    const dx=(e.clientX-startX)/z
+    const dx=(e.clientX-startX)/zoom
     const newW=clamp(startW+dx,60,520)
     el.style.setProperty("--w",newW+"px")
   })
@@ -787,7 +712,7 @@ function makeResizable(el, handle, getZoom){
   })
 }
 
-/* ===== Structured proposal logic ===== */
+/* ===== Structured proposal ===== */
 function findCreationDeckKey(){
   const keys = Object.keys(MANIFEST)
   return keys.find(k => normalizeKey(k).includes("creacio")) || null
@@ -795,20 +720,15 @@ function findCreationDeckKey(){
 
 function buildCreationCardMap(){
   const key = findCreationDeckKey()
-  if(!key) return { _error: "No trobo cap baralla amb 'Creacio/Creació' al manifest." }
+  if(!key) return { _error: true }
 
   const list = MANIFEST[key] || []
   const normList = list.map(p => ({ path:p, norm: normalizeKey(p) }))
 
   const map = {}
-  for(const row of ROWS){
-    const hit = normList.find(o => o.norm.includes(row.key))
-    if(hit) map[row.key] = hit.path
-  }
-
-  const foundCount = Object.keys(map).length
-  if(foundCount === 0){
-    return { _error: `He trobat la baralla "${key}", però no identifico els fitxers per bateria/teclat/veu/baix/guitarra al nom de fitxer.` }
+  for(const rowKey of ROWS){
+    const hit = normList.find(o => o.norm.includes(rowKey))
+    if(hit) map[rowKey] = hit.path
   }
   return map
 }
@@ -824,30 +744,12 @@ function buildProposal(){
   matrix.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`
 
   const cardMap = buildCreationCardMap()
-
-  if(cardMap._error){
-    const col = document.createElement("div")
-    col.className = "col"
-    col.innerHTML = `
-      <div class="colHeader">⚠️ Problema amb “Creació”</div>
-      <div style="padding:10px;font-size:12px;opacity:.75;line-height:1.4">
-        ${escapeHtml(cardMap._error)}
-      </div>
-    `
-    matrix.appendChild(col)
-    return
-  }
+  if(cardMap._error) return
 
   for(let c=0;c<cols;c++){
     const col = document.createElement("div")
     col.className = "col"
 
-    const header = document.createElement("div")
-    header.className = "colHeader"
-    header.textContent = `Proposta ${c+1}`
-    col.appendChild(header)
-
-    // decidim quines files surten (amb mínim 1)
     let chosen = []
     for(let r=0;r<ROWS.length;r++){
       if(Math.random() < PRESENCE_PROB) chosen.push(r)
@@ -857,55 +759,35 @@ function buildProposal(){
     }
 
     for(let r=0;r<ROWS.length;r++){
-      const row = ROWS[r]
-      const cell = document.createElement("div")
-      cell.className = "cell"
-
-      const label = document.createElement("div")
-      label.className = "rowLabel"
-      label.textContent = row.label
-
+      const rowKey = ROWS[r]
       const slot = document.createElement("div")
       slot.className = "cardSlot"
 
-      const path = cardMap[row.key]
-      const show = chosen.includes(r) && !!path
-
+      const show = chosen.includes(r) && !!cardMap[rowKey]
       if(show){
         const img = document.createElement("img")
-        const url = new URL(path, window.location.href)
+        const url = new URL(cardMap[rowKey], window.location.href)
         url.searchParams.set("t", Date.now())
         img.src = url.toString()
-        img.alt = row.label
+        img.alt = rowKey
         slot.appendChild(img)
       }else{
         slot.classList.add("empty")
       }
 
-      cell.appendChild(label)
-      cell.appendChild(slot)
-      col.appendChild(cell)
+      col.appendChild(slot)
     }
-
     matrix.appendChild(col)
   }
-}
-
-function escapeHtml(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;")
 }
 
 /* ===== Clear ===== */
 function clearBoard(){
   if(getMode()==="free"){
-    document.getElementById("freeCanvas").innerHTML = ""
+    document.getElementById("freeOverlay").innerHTML = ""
+    // si algun dia hi poses base en free:
+    // document.getElementById("freeBase").innerHTML = ""
   }else{
-    // buida només la proposta base, i també l’overlay
     document.getElementById("matrix").innerHTML = ""
     document.getElementById("structuredOverlay").innerHTML = ""
   }
