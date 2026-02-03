@@ -5,360 +5,838 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cartes Rockin</title>
 
-<!-- ✅ LLIBRERIA PER EXPORTAR IMATGE -->
+<!-- ✅ Per exportar la pissarra a PNG -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-:root{
-  --bg:#f6f7f9;
-  --accent:#ffcc00;
+  :root{
+    --bg:#f6f7f9;
+    --text:#222;
+    --accent:#ffcc00;
+    --panel:#ffffff;
+    --border:rgba(0,0,0,.18);
 
-  /* estructurada */
-  --struct-card-h:90px;
-  --struct-gap:4px;
-}
+    /* ✅ ESTRUCTURADA: +15% i menys aire */
+    --struct-card-h: 90px;
+    --struct-gap: 4px;
+  }
 
-body{
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica;
-  background:var(--bg);
-  margin:0;
-  padding:16px;
-}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+    background:var(--bg);
+    color:var(--text);
+    margin:0;
+    padding:16px;
+  }
 
-.layout{
-  display:grid;
-  grid-template-columns:360px 1fr;
-  gap:14px;
-}
+  h1{
+    margin:0 0 10px 0;
+    font-size:24px;
+    font-weight:650;
+    text-align:left;
+  }
 
-/* ================= LEFT ================= */
+  .layout{
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:14px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .layout{ grid-template-columns: 1fr; }
+  }
 
-.left{
-  background:white;
-  padding:12px;
-  border-radius:16px;
-}
+  /* ===== LEFT ===== */
+  .left{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    padding:12px;
+  }
 
-.controls{
-  display:flex;
-  gap:8px;
-  margin-bottom:10px;
-}
+  .controls{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
 
-select,button{
-  padding:10px 12px;
-  border-radius:12px;
-  border:none;
-  font-size:14px;
-}
+  select, button, input{
+    font-size:14px;
+    padding:10px 12px;
+    border-radius:12px;
+  }
 
-button{
-  background:var(--accent);
-  font-weight:700;
-  cursor:pointer;
-}
+  select{
+    border:1px solid rgba(0,0,0,.18);
+    background:white;
+    flex: 1 1 160px;
+  }
 
-.cardStage{
-  height:420px;
-  background:white;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
+  button{
+    background:var(--accent);
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+  }
 
-.cardImg{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
+  .hint{
+    font-size:12px;
+    opacity:.65;
+    margin: 10px 0 0 0;
+    line-height:1.35;
+  }
 
-/* ================= RIGHT ================= */
+  /* ===== MAIN CARD ===== */
+  .cardStage{
+    width:100%;
+    height: 420px;
+    border-radius:16px;
+    overflow:hidden;
+    background:white;
+    border:1px solid rgba(0,0,0,.10);
+    box-shadow:0 10px 24px rgba(0,0,0,.10);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
 
-.boardWrap{
-  background:white;
-  border-radius:16px;
-  padding:12px;
-}
+  .cardStage.animate{
+    animation: deal .38s cubic-bezier(.2,.9,.2,1);
+  }
 
-.boardTop{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:8px;
-}
+  @keyframes deal{
+    0%{ transform:translateY(0); }
+    35%{ transform:translateY(-10px); }
+    70%{ transform:translateY(4px); }
+    100%{ transform:translateY(0); }
+  }
 
-.zoomBtn{
-  background:#eee;
-}
+  .cardImg{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:white;
+    user-select:none;
+  }
 
-.boardViewport{
-  height:76vh;
-  overflow:auto;
-  border:2px dashed #ccc;
-  border-radius:14px;
-}
+  /* ===== RIGHT / BOARD ===== */
+  .boardWrap{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    padding:12px;
+  }
 
-/* ================= FREE ================= */
+  .boardTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin: 0 0 10px 0;
+  }
 
-.freeCanvas{
-  position:relative;
-  width:2600px;
-  height:1600px;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
-  transform-origin:0 0;
-}
+  .boardTopLeft{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
 
-.freeBase{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-}
-.freeOverlay{
-  position:absolute;
-  inset:0;
-  z-index:5;
-}
+  .boardTitle{
+    font-weight:650;
+  }
 
-/* ================= THUMBS ================= */
+  .zoomBar{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 6px;
+    border:1px solid rgba(0,0,0,.12);
+    border-radius:12px;
+    background:white;
+  }
 
-.thumb{
-  position:absolute;
-  --w:150px;
-  width:var(--w);
-}
+  .zoomBtn{
+    background:#fff;
+    border:1px solid rgba(0,0,0,.15);
+    padding:6px 10px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+  }
 
-.thumb img{
-  width:100%;
-  pointer-events:none;
-}
+  .zoomPct{
+    font-size:12px;
+    opacity:.75;
+    width:46px;
+    text-align:center;
+    font-variant-numeric: tabular-nums;
+  }
 
-.handle{
-  position:absolute;
-  right:-6px;
-  bottom:-6px;
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background:black;
-  cursor:nwse-resize;
-  opacity:0;
-}
-.thumb:hover .handle{opacity:1}
+  .modeSelect{
+    border:1px solid rgba(0,0,0,.12);
+    background:white;
+    border-radius:12px;
+    padding:8px 10px;
+    font-size:13px;
+  }
 
-/* ================= STRUCTURED ================= */
+  .boardViewport{
+    width:100%;
+    height: 76vh;
+    min-height: 520px;
+    overflow:auto;
+    border:2px dashed rgba(0,0,0,.20);
+    border-radius:14px;
+    background:white;
+    position:relative;
+  }
 
-.structuredWrap{
-  padding:6px;
-  transform-origin:0 0;
-}
+  /* ===== FREE MODE ===== */
+  .freeCanvas{
+    position:relative;
+    width: 2600px;
+    height: 1600px;
+    transform-origin: 0 0;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0) 0 0/24px 24px;
+  }
 
-.matrix{
-  display:grid;
-  gap:var(--struct-gap);
-  grid-template-columns:repeat(auto-fit,minmax(140px,170px));
-}
+  /* Base sempre a sota */
+  .freeBase{
+    position:absolute;
+    inset:0;
+    z-index: 1;
+    pointer-events:none;
+  }
+  /* Tot el que arrossegues a sobre */
+  .freeOverlay{
+    position:absolute;
+    inset:0;
+    z-index: 5;
+    pointer-events:auto;
+  }
 
-.col{
-  display:grid;
-  gap:var(--struct-gap);
-  padding:4px;
-}
+  /* ===== THUMBS ===== */
+  .thumb{
+    position:absolute;
+    --w: 150px;
+    width: var(--w);
+    height:auto;
+    background:transparent;
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+  }
 
-.cardSlot{
-  height:var(--struct-card-h);
-  background:#f1f1f1;
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+  .thumb img{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    pointer-events:none;
+    display:block;
+  }
 
-.cardSlot img{
-  height:100%;
-  object-fit:contain;
-}
+  .handle{
+    position:absolute;
+    right:-6px;
+    bottom:-6px;
+    width:14px;
+    height:14px;
+    border-radius:999px;
+    background: rgba(0,0,0,.55);
+    border: 2px solid rgba(255,255,255,.9);
+    cursor: nwse-resize;
+    touch-action:none;
 
-.hidden{display:none}
+    opacity:0;
+    transform: scale(0.85);
+    transition: opacity .12s ease, transform .12s ease;
+    pointer-events:none;
+  }
+
+  .thumb:hover .handle,
+  .thumb.is-active .handle{
+    opacity:1;
+    transform: scale(1);
+    pointer-events:auto;
+  }
+
+  /* ===== STRUCTURED MODE ===== */
+  .structuredWrap{
+    transform-origin: 0 0;
+    width: 100%;
+    height: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+    position:relative;
+  }
+
+  .structuredTop{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+
+  .structuredTop label{
+    font-size:12px;
+    opacity:.85;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .numInput{
+    width:88px;
+    border:1px solid rgba(0,0,0,.18);
+    background:white;
+    padding:7px 10px;
+    border-radius:12px;
+  }
+
+  .miniBtn{
+    background:#fff;
+    border:1px solid rgba(0,0,0,.15);
+    border-radius:12px;
+    padding:7px 10px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:13px;
+  }
+
+  /* ✅ Columnes no s’inflen */
+  .matrix{
+    display:grid;
+    gap: var(--struct-gap);
+    align-items:stretch;
+    width:100%;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 170px));
+    justify-content: start;
+  }
+
+  .col{
+    border:1px solid rgba(0,0,0,.06);
+    border-radius:12px;
+    background: rgba(255,255,255,.95);
+    overflow:hidden;
+
+    display:grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: var(--struct-gap);
+    padding: 4px;
+    min-width:0;
+  }
+
+  .cardSlot{
+    width:100%;
+    height: var(--struct-card-h);
+    border-radius:10px;
+    background: rgba(0,0,0,.03);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .cardSlot.empty{
+    background: rgba(0,0,0,.015);
+  }
+
+  .cardSlot img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+
+  .structuredBase{
+    position:relative;
+    z-index: 1;
+  }
+
+  /* Overlay per cartes arrossegades (sempre a sobre de la base) */
+  .structuredOverlay{
+    position:absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events:none;
+  }
+  .structuredOverlay .thumb{
+    pointer-events:auto;
+  }
+
+  .hidden{ display:none !important; }
 </style>
 </head>
 
 <body>
 
+<h1>Cartes Rockin</h1>
+
 <div class="layout">
 
-<!-- ================= LEFT ================= -->
-<div class="left">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="controls">
+      <select id="deck"></select>
+      <button id="btnNew" type="button">Nova carta</button>
+      <button id="btnClear" type="button">Neteja pissarra</button>
+    </div>
 
-<div class="controls">
-<select id="deck"></select>
-<button id="btnNew">Nova carta</button>
-</div>
+    <div class="cardStage" id="cardStage">
+      <img id="imgTop" class="cardImg" draggable="true" alt="Carta actual">
+    </div>
 
-<div class="cardStage">
-<img id="imgTop" class="cardImg" draggable="true">
-</div>
+    <p class="hint">
+      <b>Enter</b> = nova carta · <b>Arrossega</b> la carta a la pissarra.
+      (Doble clic a una carta de pissarra = elimina)
+    </p>
+  </div>
 
-</div>
+  <!-- RIGHT -->
+  <div class="boardWrap">
 
-<!-- ================= RIGHT ================= -->
-<div class="boardWrap">
+    <div class="boardTop">
+      <div class="boardTopLeft">
+        <div class="boardTitle">Pissarra</div>
 
-<div class="boardTop">
+        <select id="mode" class="modeSelect" aria-label="Mode pissarra">
+          <option value="free">Pissarra lliure</option>
+          <option value="structured">Pissarra estructurada</option>
+        </select>
 
-<select id="mode">
-<option value="free">Pissarra lliure</option>
-<option value="structured">Pissarra estructurada</option>
-</select>
+        <div class="zoomBar" aria-label="Zoom pissarra">
+          <button class="zoomBtn" id="zoomOut" type="button">−</button>
+          <div class="zoomPct" id="zoomPct">100%</div>
+          <button class="zoomBtn" id="zoomIn" type="button">+</button>
+        </div>
 
-<button id="zoomOut" class="zoomBtn">−</button>
-<button id="zoomIn" class="zoomBtn">+</button>
+        <!-- ✅ Export -->
+        <button class="zoomBtn" id="btnExport" type="button">📸 Descarrega</button>
+      </div>
 
-<!-- ✅ NOU BOTÓ -->
-<button id="btnExport" class="zoomBtn">📸 Descarrega</button>
+      <div style="font-size:12px;opacity:.65;">scroll X/Y</div>
+    </div>
 
-<button id="btnProposal" class="zoomBtn">Proposta</button>
+    <div class="boardViewport" id="boardViewport">
 
-</div>
+      <!-- FREE -->
+      <div class="freeCanvas" id="freeCanvas">
+        <div class="freeBase" id="freeBase"></div>
+        <div class="freeOverlay" id="freeOverlay"></div>
+      </div>
 
-<div class="boardViewport">
+      <!-- STRUCTURED -->
+      <div class="structuredWrap hidden" id="structuredWrap">
+        <div class="structuredTop">
+          <label>
+            <b>Columnes</b>
+            <input id="colInput" class="numInput" type="number" min="1" max="10" value="5" />
+          </label>
 
-<div id="freeCanvas" class="freeCanvas">
-<div id="freeBase" class="freeBase"></div>
-<div id="freeOverlay" class="freeOverlay"></div>
-</div>
+          <button class="miniBtn" id="btnProposal" type="button">Fes proposta aleatòria</button>
 
-<div id="structuredWrap" class="structuredWrap hidden">
-<div id="matrix" class="matrix"></div>
-</div>
+          <span style="font-size:12px;opacity:.65;">(mínim 1 carta per columna)</span>
+        </div>
 
-</div>
-</div>
+        <div class="structuredBase">
+          <div class="matrix" id="matrix"></div>
+        </div>
+
+        <div class="structuredOverlay" id="structuredOverlay"></div>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script>
+/* ===== Config estructurada ===== */
+const ROWS = ["bateria","teclat","veu","baix","guitarra"]
+const PRESENCE_PROB = 0.55
 
-let MANIFEST={}
-let zoom=1
-let currentPath=null
+/* ===== Estat ===== */
+let MANIFEST = {}
+let barallaActual = []
+let barallaRestant = []
+let currentPath = null
 
-const ROWS=["bateria","teclat","veu","baix","guitarra"]
+let zoom = 1.0
+const ZOOM_MIN = 0.5
+const ZOOM_MAX = 1.4
+const ZOOM_STEP = 0.1
 
-/* ================= INIT ================= */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1))
+    ;[a[i],a[j]]=[a[j],a[i]]
+  }
+  return a
+}
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)) }
 
-async function init(){
-MANIFEST=await (await fetch("manifest.json")).json()
-
-const deck=document.getElementById("deck")
-
-Object.keys(MANIFEST).forEach(k=>{
- const o=document.createElement("option")
- o.value=k
- o.textContent=k
- deck.appendChild(o)
-})
-
-deck.onchange=()=>novaCarta()
-
-document.getElementById("btnNew").onclick=novaCarta
-
-document.getElementById("zoomIn").onclick=()=>setZoom(zoom+.1)
-document.getElementById("zoomOut").onclick=()=>setZoom(zoom-.1)
-
-document.getElementById("mode").onchange=applyMode
-
-document.getElementById("btnProposal").onclick=buildProposal
-
-/* ================= EXPORTAR PNG ================= */
-
-document.getElementById("btnExport").onclick=async()=>{
-
- const mode=document.getElementById("mode").value
-
- const target=mode==="free"
-   ? document.getElementById("freeCanvas")
-   : document.getElementById("structuredWrap")
-
- const canvas=await html2canvas(target,{
-   backgroundColor:"#ffffff",
-   scale:2
- })
-
- const link=document.createElement("a")
- link.download="pissarra-rockin.png"
- link.href=canvas.toDataURL()
- link.click()
+function normalizeKey(s){
+  return (s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
 }
 
-novaCarta()
+function getMode(){
+  return document.getElementById("mode").value
+}
+
+async function init(){
+  MANIFEST = await (await fetch("manifest.json")).json()
+
+  const select = document.getElementById("deck")
+  Object.keys(MANIFEST).forEach(b=>{
+    const opt=document.createElement("option")
+    opt.value=b
+    opt.textContent=b
+    select.appendChild(opt)
+  })
+
+  select.addEventListener("change", carregarBaralla)
+
+  document.getElementById("btnNew").addEventListener("click", novaCarta)
+  document.getElementById("btnClear").addEventListener("click", clearBoard)
+  document.getElementById("mode").addEventListener("change", applyMode)
+
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Enter") novaCarta()
+  })
+
+  document.getElementById("zoomIn").addEventListener("click", ()=> setZoom(zoom + ZOOM_STEP))
+  document.getElementById("zoomOut").addEventListener("click", ()=> setZoom(zoom - ZOOM_STEP))
+  updateZoomUI()
+
+  document.getElementById("btnProposal").addEventListener("click", buildProposal)
+
+  /* ✅ Export PNG */
+  document.getElementById("btnExport").addEventListener("click", exportPNG)
+
+  // drag from main card
+  const imgTop = document.getElementById("imgTop")
+  imgTop.addEventListener("dragstart", (e)=>{
+    if(!currentPath) return
+    e.dataTransfer.setData("text/plain", currentPath)
+    e.dataTransfer.effectAllowed="copy"
+  })
+
+  // drop in free overlay
+  const freeOverlay = document.getElementById("freeOverlay")
+  freeOverlay.addEventListener("dragover", e=>e.preventDefault())
+  freeOverlay.addEventListener("drop", e=>{
+    e.preventDefault()
+    if(getMode()!=="free") return
+    const path = e.dataTransfer.getData("text/plain")
+    if(!path) return
+
+    const freeCanvas = document.getElementById("freeCanvas")
+    const rect = freeCanvas.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / zoom
+    const y = (e.clientY - rect.top) / zoom
+    addThumbToContainer(freeOverlay, path, x, y, "150px")
+  })
+
+  // ✅ drop structuredWrap (NOT overlay) — robust
+  const structuredWrap = document.getElementById("structuredWrap")
+  structuredWrap.addEventListener("dragover", e=>{
+    if(getMode()!=="structured") return
+    e.preventDefault()
+  })
+  structuredWrap.addEventListener("drop", e=>{
+    e.preventDefault()
+    if(getMode()!=="structured") return
+    const path = e.dataTransfer.getData("text/plain")
+    if(!path) return
+
+    const rect = structuredWrap.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / zoom
+    const y = (e.clientY - rect.top) / zoom
+
+    const structuredOverlay = document.getElementById("structuredOverlay")
+    addThumbToContainer(structuredOverlay, path, x, y, "140px")
+  })
+
+  carregarBaralla()
+  setZoom(1.0)
+  applyMode()
+  buildProposal()
 }
 
 function setZoom(z){
- zoom=Math.max(.5,Math.min(1.6,z))
- const el=document.getElementById(
-   document.getElementById("mode").value==="free"
-   ?"freeCanvas":"structuredWrap"
- )
- el.style.transform=`scale(${zoom})`
+  zoom = clamp(z, ZOOM_MIN, ZOOM_MAX)
+  updateZoomUI()
+
+  if(getMode()==="free"){
+    document.getElementById("freeCanvas").style.transform = `scale(${zoom})`
+  }else{
+    document.getElementById("structuredWrap").style.transform = `scale(${zoom})`
+  }
+}
+
+function updateZoomUI(){
+  document.getElementById("zoomPct").textContent = Math.round(zoom*100) + "%"
 }
 
 function applyMode(){
- const free=document.getElementById("freeCanvas")
- const structured=document.getElementById("structuredWrap")
+  const mode = getMode()
+  const freeCanvas = document.getElementById("freeCanvas")
+  const structured = document.getElementById("structuredWrap")
 
- if(mode.value==="free"){
-   free.classList.remove("hidden")
-   structured.classList.add("hidden")
- }else{
-   free.classList.add("hidden")
-   structured.classList.remove("hidden")
- }
+  if(mode==="free"){
+    structured.classList.add("hidden")
+    freeCanvas.classList.remove("hidden")
+    freeCanvas.style.transformOrigin="0 0"
+    freeCanvas.style.transform = `scale(${zoom})`
+  }else{
+    freeCanvas.classList.add("hidden")
+    structured.classList.remove("hidden")
+    structured.style.transformOrigin="0 0"
+    structured.style.transform = `scale(${zoom})`
+  }
 }
 
-/* ================= CARTA ================= */
+/* ===== Carta gran ===== */
+function carregarBaralla(){
+  const deck = document.getElementById("deck").value
+  barallaActual = [...MANIFEST[deck]]
+  barallaRestant = shuffle([...barallaActual])
+  novaCarta()
+}
+
+function setMainImg(path){
+  const img=document.getElementById("imgTop")
+  const url=new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  img.src=url.toString()
+}
 
 function novaCarta(){
- const deck=document.getElementById("deck").value
- const list=MANIFEST[deck]
- currentPath=list[Math.floor(Math.random()*list.length)]
- document.getElementById("imgTop").src=currentPath
+  if(barallaRestant.length===0) barallaRestant = shuffle([...barallaActual])
+  currentPath = barallaRestant.pop()
+  setMainImg(currentPath)
+
+  const stage=document.getElementById("cardStage")
+  stage.classList.remove("animate")
+  void stage.offsetWidth
+  stage.classList.add("animate")
 }
 
-/* ================= STRUCTURED ================= */
+/* ===== Thumbs ===== */
+function createThumb(path, widthCss){
+  const t=document.createElement("div")
+  t.className="thumb"
+  t.style.setProperty("--w", widthCss || "150px")
+
+  const img=document.createElement("img")
+  const url=new URL(path, window.location.href)
+  url.searchParams.set("t", Date.now())
+  img.src=url.toString()
+
+  const handle=document.createElement("div")
+  handle.className="handle"
+  handle.title="Arrossega per canviar la mida"
+
+  t.appendChild(img)
+  t.appendChild(handle)
+
+  // doble clic = eliminar
+  t.addEventListener("dblclick", ()=>t.remove())
+
+  makeMovable(t)
+  makeResizable(t, handle)
+  return t
+}
+
+function addThumbToContainer(container, path, x, y, widthCss){
+  const t = createThumb(path, widthCss)
+  const w = parseFloat(widthCss) || 150
+  t.style.left = (x - (w/2)) + "px"
+  t.style.top  = (y - (w/2)) + "px"
+  container.appendChild(t)
+}
+
+function makeMovable(el){
+  let startX=0,startY=0,origL=0,origT=0,dragging=false
+
+  el.addEventListener("pointerdown",(e)=>{
+    if(e.target && e.target.classList.contains("handle")) return
+    dragging=true
+    el.classList.add("is-active")
+    el.setPointerCapture(e.pointerId)
+    el.style.zIndex=String(Date.now())
+    startX=e.clientX; startY=e.clientY
+    origL=parseFloat(el.style.left||"0")
+    origT=parseFloat(el.style.top||"0")
+  })
+
+  el.addEventListener("pointermove",(e)=>{
+    if(!dragging) return
+    const dx=(e.clientX-startX)/zoom
+    const dy=(e.clientY-startY)/zoom
+    el.style.left=(origL+dx)+"px"
+    el.style.top=(origT+dy)+"px"
+  })
+
+  el.addEventListener("pointerup",(e)=>{
+    dragging=false
+    el.classList.remove("is-active")
+    try{el.releasePointerCapture(e.pointerId)}catch(_){}
+  })
+  el.addEventListener("pointercancel",()=>{
+    dragging=false
+    el.classList.remove("is-active")
+  })
+}
+
+function makeResizable(el, handle){
+  let startX=0,startW=150,resizing=false
+
+  handle.addEventListener("pointerdown",(e)=>{
+    resizing=true
+    el.classList.add("is-active")
+    handle.setPointerCapture(e.pointerId)
+    el.style.zIndex=String(Date.now())
+    startX=e.clientX
+    startW=parseFloat(getComputedStyle(el).getPropertyValue("--w"))||150
+    e.preventDefault(); e.stopPropagation()
+  })
+
+  handle.addEventListener("pointermove",(e)=>{
+    if(!resizing) return
+    const dx=(e.clientX-startX)/zoom
+    const newW=clamp(startW+dx,60,520)
+    el.style.setProperty("--w",newW+"px")
+  })
+
+  handle.addEventListener("pointerup",(e)=>{
+    resizing=false
+    el.classList.remove("is-active")
+    try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+  })
+  handle.addEventListener("pointercancel",()=>{
+    resizing=false
+    el.classList.remove("is-active")
+  })
+}
+
+/* ===== Structured proposal ===== */
+function findCreationDeckKey(){
+  const keys = Object.keys(MANIFEST)
+  return keys.find(k => normalizeKey(k).includes("creacio")) || null
+}
+
+function buildCreationCardMap(){
+  const key = findCreationDeckKey()
+  if(!key) return { _error: true }
+
+  const list = MANIFEST[key] || []
+  const normList = list.map(p => ({ path:p, norm: normalizeKey(p) }))
+
+  const map = {}
+  for(const rowKey of ROWS){
+    const hit = normList.find(o => o.norm.includes(rowKey))
+    if(hit) map[rowKey] = hit.path
+  }
+  return map
+}
 
 function buildProposal(){
+  const colInput = document.getElementById("colInput")
+  let cols = Number(colInput.value || 5)
+  cols = clamp(cols, 1, 10)
+  colInput.value = cols
 
- const matrix=document.getElementById("matrix")
- matrix.innerHTML=""
+  const matrix = document.getElementById("matrix")
+  matrix.innerHTML = ""
 
- const list=MANIFEST[Object.keys(MANIFEST).find(k=>k.toLowerCase().includes("creacio"))]
+  const cardMap = buildCreationCardMap()
+  if(cardMap._error) return
 
- for(let c=0;c<5;c++){
+  for(let c=0;c<cols;c++){
+    const col = document.createElement("div")
+    col.className = "col"
 
-   const col=document.createElement("div")
-   col.className="col"
+    let chosen = []
+    for(let r=0;r<ROWS.length;r++){
+      if(Math.random() < PRESENCE_PROB) chosen.push(r)
+    }
+    if(chosen.length === 0){
+      chosen = [Math.floor(Math.random()*ROWS.length)]
+    }
 
-   for(let r=0;r<5;r++){
-     const slot=document.createElement("div")
-     slot.className="cardSlot"
+    for(let r=0;r<ROWS.length;r++){
+      const rowKey = ROWS[r]
+      const slot = document.createElement("div")
+      slot.className = "cardSlot"
 
-     if(Math.random()>.4){
-       const img=document.createElement("img")
-       img.src=list[r]
-       slot.appendChild(img)
-     }
+      const show = chosen.includes(r) && !!cardMap[rowKey]
+      if(show){
+        const img = document.createElement("img")
+        const url = new URL(cardMap[rowKey], window.location.href)
+        url.searchParams.set("t", Date.now())
+        img.src = url.toString()
+        img.alt = rowKey
+        slot.appendChild(img)
+      }else{
+        slot.classList.add("empty")
+      }
 
-     col.appendChild(slot)
-   }
+      col.appendChild(slot)
+    }
+    matrix.appendChild(col)
+  }
+}
 
-   matrix.appendChild(col)
- }
+/* ===== Export PNG ===== */
+async function exportPNG(){
+  // Exportem la pissarra activa (sense trencar res)
+  const mode = getMode()
+  const target = (mode === "free")
+    ? document.getElementById("freeCanvas")
+    : document.getElementById("structuredWrap")
+
+  // Nom amb data/hora
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")
+  const filename = `pissarra-rockin-${mode}-${stamp}.png`
+
+  // html2canvas (useCORS ajuda en alguns casos)
+  const canvas = await html2canvas(target, {
+    backgroundColor: "#ffffff",
+    scale: 2,
+    useCORS: true
+  })
+
+  const link = document.createElement("a")
+  link.download = filename
+  link.href = canvas.toDataURL("image/png")
+  link.click()
+}
+
+/* ===== Clear ===== */
+function clearBoard(){
+  if(getMode()==="free"){
+    document.getElementById("freeOverlay").innerHTML = ""
+  }else{
+    document.getElementById("matrix").innerHTML = ""
+    document.getElementById("structuredOverlay").innerHTML = ""
+  }
 }
 
 init()
 </script>
+
 </body>
 </html>
