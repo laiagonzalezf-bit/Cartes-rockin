@@ -1,85 +1,133 @@
 <!doctype html>
 <html lang="ca">
 <head>
-  <meta charset="utf-8" />
-  <title>Cartes Rockin</title>
+<meta charset="utf-8" />
+<title>Cartes Rockin</title>
 
-  <style>
-    body{
-      font-family: system-ui, -apple-system, Segoe UI;
-      background:#111;
-      color:white;
-      text-align:center;
-      margin:0;
-      padding:20px;
-    }
+<style>
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica;
+  background:#111;
+  color:white;
+  text-align:center;
+  margin:0;
+  padding:20px;
+}
 
-    h1{ margin-top:0; }
+h1{
+  margin:0 0 15px 0;
+  font-size:28px;
+}
 
-    select, button{
-      font-size:18px;
-      padding:10px 16px;
-      border-radius:10px;
-      margin:10px;
-      cursor:pointer;
-    }
+.controls{
+  margin-bottom:15px;
+}
 
-    button{
-      background:#ffcc00;
-      border:none;
-      font-weight:bold;
-    }
+select, button{
+  font-size:18px;
+  padding:10px 16px;
+  border-radius:12px;
+  margin:6px;
+  cursor:pointer;
+}
 
-    img{
-      max-width:90%;
-      max-height:70vh;
-      margin-top:20px;
-      border-radius:12px;
-      box-shadow:0 8px 25px rgba(0,0,0,.6);
-    }
-  </style>
+button{
+  background:#ffcc00;
+  border:none;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#ffd84d;
+}
+
+img{
+  max-width:95%;
+  max-height:75vh;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+.info{
+  margin-top:10px;
+  opacity:.7;
+  font-size:14px;
+}
+</style>
 </head>
 
 <body>
 
 <h1>🎲 Cartes Rockin</h1>
 
-<select id="deck"></select>
-<button onclick="novaCarta()">Nova carta</button>
+<div class="controls">
+  <select id="deck"></select>
+  <button onclick="novaCarta()">Nova carta</button>
+</div>
 
-<br>
 <img id="img">
+<div class="info">Prem ENTER per treure una nova carta</div>
 
 <script>
 let MANIFEST = {}
+let barallaActual = []
+let barallaRestant = []
 
+// barrejar array (Fisher-Yates)
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1))
+    ;[array[i],array[j]]=[array[j],array[i]]
+  }
+  return array
+}
+
+// carregar manifest
 async function init(){
   const res = await fetch("manifest.json")
   MANIFEST = await res.json()
 
   const select = document.getElementById("deck")
 
-  Object.keys(MANIFEST).forEach(baralla => {
-    const opt = document.createElement("option")
-    opt.value = baralla
-    opt.textContent = baralla
+  Object.keys(MANIFEST).forEach(b=>{
+    const opt=document.createElement("option")
+    opt.value=b
+    opt.textContent=b
     select.appendChild(opt)
   })
 
+  select.addEventListener("change", carregarBaralla)
+
+  carregarBaralla()
+}
+
+// carregar nova baralla
+function carregarBaralla(){
+  const deck=document.getElementById("deck").value
+  barallaActual=[...MANIFEST[deck]]
+  barallaRestant=shuffle([...barallaActual])
   novaCarta()
 }
 
-function random(arr){
-  return arr[Math.floor(Math.random()*arr.length)]
-}
-
+// treure carta
 function novaCarta(){
-  const deck = document.getElementById("deck").value
-  const files = MANIFEST[deck]
-  const path = random(files)
 
-  document.getElementById("img").src = path + "?t=" + Date.now()
+  // si s’han acabat → tornar a barrejar
+  if(barallaRestant.length===0){
+    barallaRestant=shuffle([...barallaActual])
+  }
+
+  const path=barallaRestant.pop()
+
+  // encodeURI arregla accents/espais (important!)
+  document.getElementById("img").src =
+    encodeURI(path) + "?t=" + Date.now()
 }
+
+// tecla ENTER
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter") novaCarta()
+})
 
 init()
 </script>
