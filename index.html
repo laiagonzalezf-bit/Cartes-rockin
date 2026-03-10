@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cartes Rockin</title>
 
-<!-- ✅ Per exportar la pissarra a PNG -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
@@ -379,6 +378,17 @@
   }
 
   .hidden{ display:none !important; }
+
+  /* ✅ Estils per la llicència CC */
+  .footer-license {
+    grid-column: 1 / -1; /* Ocupa tota l'amplada de la graella layout */
+    margin-top: 40px;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+  }
 </style>
 </head>
 
@@ -388,7 +398,6 @@
 
 <div class="layout">
 
-  <!-- LEFT -->
   <div class="left">
     <div class="controls">
       <select id="deck"></select>
@@ -406,7 +415,6 @@
     </p>
   </div>
 
-  <!-- RIGHT -->
   <div class="boardWrap">
 
     <div class="boardTop">
@@ -432,13 +440,11 @@
 
     <div class="boardViewport" id="boardViewport">
 
-      <!-- FREE -->
       <div class="freeCanvas" id="freeCanvas">
         <div class="freeBase" id="freeBase"></div>
         <div class="freeOverlay" id="freeOverlay"></div>
       </div>
 
-      <!-- STRUCTURED -->
       <div class="structuredWrap hidden" id="structuredWrap">
         <div class="structuredTop">
           <label>
@@ -462,9 +468,17 @@
 
   </div>
 
-</div>
+  <div class="footer-license no-print">
+      <p>Aquesta eina està sota una llicència 
+         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ca" target="_blank" style="color: #007bff; text-decoration: none;">
+         Creative Commons Reconeixement-NoComercial-CompartirIgual 4.0 Internacional
+         </a>
+      </p>
+      <img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png" alt="CC BY-NC-SA" style="height: 31px; margin-top: 10px;">
+  </div>
 
-<script>
+</div> <script>
+/* El teu script original es manté intacte per sota */
 /* ===== Config estructurada ===== */
 const ROWS = ["bateria","teclat","veu","baix","guitarra"]
 const PRESENCE_PROB = 0.55
